@@ -1,6 +1,6 @@
 # Ordbok API Vis-klient
 
-![Prosjektbanner](images/ordbokapi-vis-client-open-graph.png)
+![Prosjektbanner](static/images/ordbokapi-vis-client-open-graph.png)
 
 <p align="center">
   <a href="https://vis.ordbokapi.org">Nettstad</a> •
@@ -10,20 +10,19 @@
 
 ## Om
 
-Vis-klienten er ein graf-basert grafisk brukargrensesnitt for å utforske data frå [Ordbok API](https://ordbokapi.org). Klienten er skriven med vanilje-JS og webkomponentar.
+Vis-klienten er ein graf-basert grafisk brukargrensesnitt for å utforske data frå [Ordbok API](https://ordbokapi.org). Klienten er skriven med TypeScript og webkomponentar.
 
 ## Starta prosjektet lokalt
 
-Berre klon prosjektet og køyr ein lokal webserver i rotmappa, t.d.:
+Du treng [Node.js](https://nodejs.org) og [Yarn](https://yarnpkg.com) installert.
+
+> Viss du brukar [Volta](https://volta.sh) treng du ikkje å installere Node.js. Volta vil bruka den versjonen av Node.js som er spesifisert i `package.json` når du køyrar `yarn` eller `node` kommandoar i prosjektmappa.
 
 ```bash
-python -m http.server # Python 3
-
-python -m SimpleHTTPServer # Python 2
-
-npx http-server # Node.js (npm)
-
-yarn dlx http-server # Node.js (Yarn)
+git clone https://github.com/ordbokapi/vis-client.git
+cd vis-client
+yarn
+yarn start
 ```
 
 ## Lisens
