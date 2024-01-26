@@ -146,4 +146,31 @@ export class Vector2D {
   distance(v: Vector2D): number {
     return this.subtract(v).magnitude;
   }
+
+  /**
+   * Returns a string representation of this vector.
+   */
+  toString(): string {
+    return `(${this.x},${this.y})`;
+  }
+
+  /**
+   * Parse a vector from a string.
+   * @param str String to parse.
+   */
+  static parse(str: string): Vector2D {
+    const match = str.match(/^\((?<x>-?\d+),(?<y>-?\d+)\)$/);
+
+    if (!match) throw new Error('Invalid vector string');
+
+    const x = Number.parseInt(match.groups!.x, 10);
+
+    if (Number.isNaN(x)) throw new Error('Invalid vector string, bad x');
+
+    const y = Number.parseInt(match.groups!.y, 10);
+
+    if (Number.isNaN(y)) throw new Error('Invalid vector string, bad y');
+
+    return new Vector2D(x, y);
+  }
 }

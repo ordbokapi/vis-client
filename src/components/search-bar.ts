@@ -1,6 +1,7 @@
 import { ApiClient, SearchResults } from '../providers/index.js';
 import { Dictionary } from '../types/dictionary.js';
 import { html } from '../utils/index.js';
+import { StateManagedElement } from './state-managed-element.js';
 import sharedStyles from 'bundle-text:../../static/shared.css';
 import { LoadingIcon } from './loading-icon.js';
 
@@ -9,7 +10,7 @@ import { LoadingIcon } from './loading-icon.js';
  * Search results are displayed in a tooltip, and clicking on a result will
  * close the tooltip and fire a `articleSelected` event.
  */
-export class SearchBar extends HTMLElement {
+export class SearchBar extends StateManagedElement {
   /**
    * The root element.
    */
@@ -389,14 +390,11 @@ export class SearchBar extends HTMLElement {
   #selectResult(index = this.#resultIndex) {
     if (index >= 0 && index < this.#resultCount) {
       this.#input.value = this.#results.results[index].title;
-      this.dispatchEvent(
-        new CustomEvent('articleSelected', {
-          detail: {
-            id: this.#results.results[index].id,
-            dictionary: this.#results.results[index].dictionary,
-          },
-        }),
-      );
+      this.appStateManager.set('currentArticle', {
+        id: this.#results.results[index].id,
+        dictionary: this.#results.results[index].dictionary,
+      });
+
       this.#hideTooltip();
       this.#input.blur();
     }

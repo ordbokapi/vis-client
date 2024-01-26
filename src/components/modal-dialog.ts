@@ -81,8 +81,6 @@ export class ModalDialog extends HTMLElement {
         : document.createTextNode('');
     this.#onClose = onClose;
 
-    console.log(this.#content);
-
     this.attachShadow({ mode: 'open' });
     this.shadowRoot!.innerHTML = html`
       <style>

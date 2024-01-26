@@ -2,6 +2,7 @@ export * from './app-logo.js';
 export * from './loading-icon.js';
 export * from './search-bar.js';
 export * from './sidebar.js';
+export * from './state-managed-element.js';
 export * from './statusbar.js';
 export * from './tooltip-cue.js';
 export * from './viewport.js';

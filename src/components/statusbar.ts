@@ -1,12 +1,14 @@
 import { html } from '../utils/index.js';
+import { StateManagedElement } from './state-managed-element.js';
 import sharedStyles from 'bundle-text:../../static/shared.css';
 import './tooltip-cue.js';
+import { Vector2D } from '../types/index.js';
 
 /**
  * Statusbar which provides controls for the viewport, such as zooming and
  * centering the viewport.
  */
-export class Statusbar extends HTMLElement {
+export class Statusbar extends StateManagedElement {
   /**
    * The root element.
    */
@@ -26,6 +28,7 @@ export class Statusbar extends HTMLElement {
   set zoomLevel(value: number) {
     this.#zoomLevel = Math.round(value);
     this.#updateZoomLabel();
+    this.appStateManager.set('zoomLevel', this.#zoomLevel);
   }
 
   /**
@@ -122,7 +125,7 @@ export class Statusbar extends HTMLElement {
     ).addEventListener('click', (event) => this.#zoom('in', event.shiftKey));
 
     this.#root.querySelector('#center-view')!.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('center'));
+      this.appStateManager.set('translation', new Vector2D(0, 0));
     });
 
     this.#root
@@ -135,7 +138,7 @@ export class Statusbar extends HTMLElement {
           return;
         }
         this.zoomLevel = Math.min(this.maxZoom, Math.max(this.minZoom, value));
-        this.dispatchEvent(new CustomEvent('zoom', { detail: this.zoomLevel }));
+        this.appStateManager.set('zoomLevel', this.zoomLevel);
       });
 
     this.#root
@@ -147,8 +150,13 @@ export class Statusbar extends HTMLElement {
 
     window.addEventListener('keydown', (event) => {
       if (event.ctrlKey && event.key === '0') {
-        this.dispatchEvent(new CustomEvent('center'));
+        this.appStateManager.set('translation', new Vector2D(0, 0));
       }
+    });
+
+    this.appStateManager.observe('zoomLevel', (zoomLevel) => {
+      this.#zoomLevel = Math.round(zoomLevel);
+      this.#updateZoomLabel();
     });
   }
 
@@ -171,7 +179,7 @@ export class Statusbar extends HTMLElement {
 
     this.zoomLevel = Math.min(this.maxZoom, Math.max(this.minZoom, targetStep));
 
-    this.dispatchEvent(new CustomEvent('zoom', { detail: this.zoomLevel }));
+    this.appStateManager.set('zoomLevel', this.zoomLevel);
   }
 
   /**

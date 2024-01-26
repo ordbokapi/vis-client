@@ -4,16 +4,17 @@ import { Viewport as PixiViewport } from 'pixi-viewport';
 import { html, text } from '../utils/index.js';
 import { GraphView } from '../rendering/index.js';
 import { ApiClient } from '../providers/index.js';
-import { Dictionary } from '../types/index.js';
-import { LoadingIcon } from './loading-icon.js';
+import { Dictionary, Vector2D } from '../types/index.js';
+import { StateManagedElement } from './state-managed-element.js';
 import { ModalDialog } from './modal-dialog.js';
+import './loading-icon.js';
 
 /**
  * Viewport displayed in the browser, which uses a PixiJS application to render
  * the interactive graphical content of the editor. Allows the user to pan and
  * zoom the view.
  */
-export class Viewport extends HTMLElement {
+export class Viewport extends StateManagedElement {
   constructor() {
     super();
 
@@ -141,19 +142,26 @@ export class Viewport extends HTMLElement {
     // add the graph view
     this.graphView = new GraphView(this.viewport);
 
-    // bubble viewport selection changes
-    this.graphView.addEventListener('nodeSelected', (event) => {
-      this.dispatchEvent(
-        new CustomEvent('nodeSelected', {
-          detail: (event as CustomEvent).detail,
-        }),
+    this.viewport.on('zoomed', () => {
+      this.appStateManager.set('zoomLevel', this.viewport.scale.x * 100);
+    });
+
+    this.viewport.on('moved', () => {
+      this.appStateManager.set(
+        'translation',
+        new Vector2D(
+          Math.round(this.viewport.center.x),
+          Math.round(this.viewport.center.y),
+        ),
       );
     });
 
-    this.viewport.on('zoomed', () => {
-      this.dispatchEvent(
-        new CustomEvent('zoom', { detail: this.viewport.scale.x * 100 }),
-      );
+    this.appStateManager.observe('zoomLevel', (zoomLevel) => {
+      this.zoomLevel = zoomLevel;
+    });
+
+    this.appStateManager.observe('translation', (translation) => {
+      this.viewport.moveCenter(translation.x, translation.y);
     });
 
     this.#client = new ApiClient();
@@ -207,8 +215,13 @@ export class Viewport extends HTMLElement {
     return this.viewport.scale.x * 100;
   }
   set zoomLevel(value: number) {
-    this.viewport.setZoom(value / 100);
+    const float = value / 100;
+
+    if (float === this.viewport.scale.x) return;
+
+    this.viewport.setZoom(float);
     this.refresh();
+    this.appStateManager.set('zoomLevel', value);
   }
 
   /**
@@ -246,7 +259,15 @@ export class Viewport extends HTMLElement {
           <p>
             Det oppstod ein feil under lasting av dataa. Prøv igjen seinare.
           </p>
-          ${errors.map((error) => html` <p>${text`${error.message}`}</p> `)}
+          <p>
+            Artikkel-ID: <code>${articleId}</code>, Ordbok:
+            <code>${dictionary}</code>
+          </p>
+          ${errors.reduce(
+            (acc, error) =>
+              acc + html` <p><code>${text`${error.message}`}</code></p> `,
+            '',
+          )}
         `,
       });
       document.body.appendChild(dialog);
@@ -256,7 +277,7 @@ export class Viewport extends HTMLElement {
 
     this.graphView.setGraph(graph);
 
-    this.center();
+    // this.center();
   }
 }
 

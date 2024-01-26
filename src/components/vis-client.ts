@@ -1,14 +1,15 @@
 import { html } from '../utils/index.js';
+import { AppStateManager } from '../providers/index.js';
+import { StateManagedElement } from './state-managed-element.js';
 import { SearchBar } from './search-bar.js';
 import { Sidebar } from './sidebar.js';
 import { Statusbar } from './statusbar.js';
 import { Viewport } from './viewport.js';
 import './app-logo.js';
-
 /**
  * Main client component, which encompasses the entire application.
  */
-export class VisClient extends HTMLElement {
+export class VisClient extends StateManagedElement {
   #root: HTMLDivElement;
 
   /**
@@ -89,36 +90,19 @@ export class VisClient extends HTMLElement {
       'vis-statusbar',
     ) as Statusbar;
 
-    // keep statusbar zoom in sync with viewport zoom and vice versa.
-    this.#viewport.addEventListener('zoom', (event) => {
-      this.#statusbar.zoomLevel = (event as CustomEvent).detail;
-    });
-
-    this.#statusbar.addEventListener('zoom', (event) => {
-      this.#viewport.zoomLevel = (event as CustomEvent).detail;
-    });
-
-    // center view when statusbar event is received
-    this.#statusbar.addEventListener('center', () => this.#viewport.center());
-
     // load graph when articleSelected event is received from search bar
     this.#searchBar = this.shadowRoot!.querySelector(
       'vis-search-bar',
     ) as SearchBar;
 
-    this.#searchBar.addEventListener('articleSelected', (event) => {
-      const { id, dictionary } = (event as CustomEvent).detail;
-      this.#viewport.loadGraph(id, dictionary);
+    this.appStateManager.observe('currentArticle', (article) => {
+      if (article?.dictionary && article?.id) {
+        this.#viewport.loadGraph(article.id, article.dictionary);
+      }
     });
   }
 
   connectedCallback() {
-    // Listen for viewport selection changes.
-    this.#viewport.addEventListener('nodeSelected', (event) => {
-      const { id, dictionary } = (event as CustomEvent).detail;
-      this.#sidebar.loadArticle(id, dictionary);
-    });
-
     this.#statusbar.zoomLevel = this.#viewport.zoomLevel;
   }
 }

@@ -3,10 +3,11 @@ import * as pixi from 'pixi.js';
 // @ts-ignore
 import { Viewport } from 'pixi-viewport';
 import {
-  ApiClient,
+  AppStateManager,
   Article,
   ArticleGraph,
   ArticleGraphEdge,
+  ScopedAppStateManager,
 } from '../providers/index.js';
 import { Dictionary, Vector2D } from '../types/index.js';
 
@@ -16,9 +17,9 @@ import { Dictionary, Vector2D } from '../types/index.js';
  */
 export class GraphView extends EventTarget {
   /**
-   * GraphQL client.
+   * The application state manager.
    */
-  #client: ApiClient;
+  #appStateManager: ScopedAppStateManager;
 
   /**
    * Pixi-viewport instance.
@@ -50,7 +51,16 @@ export class GraphView extends EventTarget {
 
   constructor(viewport: Viewport) {
     super();
-    this.#client = new ApiClient();
+
+    if (!(window as any).appStateManager) {
+      (window as any).appStateManager = new AppStateManager();
+    }
+    this.#appStateManager = (
+      window as any as {
+        appStateManager: AppStateManager;
+      }
+    ).appStateManager.for(this);
+
     this.#viewport = viewport;
     this.#overlayCanvas = this.#viewport.addChild(new pixi.Graphics());
     this.#edgeCanvas = this.#viewport.addChild(new pixi.Graphics());
@@ -219,11 +229,7 @@ export class GraphView extends EventTarget {
       this.#selectedNode.tint = 0xffffff;
     }
 
-    this.dispatchEvent(
-      new CustomEvent('nodeSelected', {
-        detail: { id, dictionary },
-      }),
-    );
+    this.#appStateManager.set('sidebarArticle', { id, dictionary });
 
     // Update style of newly selected node
     node.tint = 0x666666;

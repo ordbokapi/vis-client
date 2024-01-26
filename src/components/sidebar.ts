@@ -1,6 +1,7 @@
 import { ApiClient, Article } from '../providers/index.js';
 import { Dictionary } from '../types/dictionary.js';
 import { html, text } from '../utils/index.js';
+import { StateManagedElement } from './state-managed-element.js';
 import { ModalDialog } from './modal-dialog.js';
 import './loading-icon.js';
 
@@ -8,7 +9,7 @@ import './loading-icon.js';
  * Sidebar which shows data about the current selection, such as the word or
  * phrase that is selected, and its definitions.
  */
-export class Sidebar extends HTMLElement {
+export class Sidebar extends StateManagedElement {
   /**
    * The root element of the component.
    */
@@ -166,6 +167,19 @@ export class Sidebar extends HTMLElement {
     this.#addResizer();
     this.#render();
     this.#apiClient = new ApiClient();
+
+    this.appStateManager.observe('sidebarArticle', (article) => {
+      if (
+        !article ||
+        article.id === undefined ||
+        article.dictionary === undefined
+      ) {
+        this.article = undefined;
+        return;
+      }
+
+      this.loadArticle(article.id, article.dictionary);
+    });
   }
 
   #addResizer() {
@@ -292,7 +306,14 @@ export class Sidebar extends HTMLElement {
             Det oppstod ein feil under lasting av artikkelen. Prøv igjen
             seinare.
           </p>
-          ${errors.map((error) => html` <p>${text`${error.message}`}</p> `)}
+          <p>
+            Artikkel-ID: <code>${id}</code>, Ordbok: <code>${dictionary}</code>
+          </p>
+          ${errors.reduce(
+            (acc, error) =>
+              acc + html` <p><code>${text`${error.message}`}</code></p> `,
+            '',
+          )}
         `,
       });
       document.body.appendChild(dialog);
