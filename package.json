@@ -22,6 +22,6 @@
   },
   "scripts": {
     "start": "parcel static/index.html",
-    "build": "parcel build static/index.html"
+    "build": "parcel build static/index.html --public-url https://vis.ordbokapi.org"
   }
 }
