@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarala&family=IBM+Plex+Sans&family=Lora&display=swap');
+
+:root {
+  --main-bg-color: #1b1b1b;
+  --main-text-color: #f4f4f4;
+  --main-text-emphasis-color: #f7ca4f;
+  --navbar-bg-color: #333;
+  --link-color: #4fc3f7;
+  --link-hover-color: #29b6f6;
+  --btn-primary-bg-color: #0593ac;
+  --btn-primary-text-color: #fff;
+  --btn-primary-hover-bg-color: #13aac5;
+  --btn-primary-active-bg-color: #076d80;
+  --btn-secondary-bg-color: #999999;
+  --btn-secondary-text-color: #000;
+  --btn-secondary-hover-bg-color: #b8b8b8;
+  --btn-secondary-active-bg-color: #868686;
+}
+
+body,
+html {
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: var(--main-text-color);
+  background-color: var(--main-bg-color);
+  overflow: hidden;
+}

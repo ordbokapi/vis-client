@@ -1,0 +1,85 @@
+:host {
+  --color-accent: #29d7f6;
+  --main-bg-color: #1b1b1b;
+  --main-text-color: #f4f4f4;
+  --main-text-emphasis-color: #f7ca4f;
+  --secondary-bg-color: #333;
+  --link-color: #4fc3f7;
+  --link-hover-color: #29b6f6;
+  --btn-primary-bg-color: #0593ac;
+  --btn-primary-text-color: #fff;
+  --btn-primary-hover-bg-color: #13aac5;
+  --btn-primary-active-bg-color: #076d80;
+  --btn-secondary-bg-color: #999999;
+  --btn-secondary-text-color: #000;
+  --btn-secondary-hover-bg-color: #b8b8b8;
+  --btn-secondary-active-bg-color: #868686;
+  --border-color: #666;
+  --list-item-bg-color: #353535;
+  --list-item-hover-bg-color: #444;
+
+  --sans-serif-family: 'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
+  --serif-family: 'Lora', 'Times New Roman', Times, serif;
+}
+
+button,
+input {
+  background-color: #353535;
+  border: 1px solid #666;
+  border-radius: 0.25em;
+  padding: 0.5em 0.5em;
+  font-family: var(--sans-serif-family);
+  font-size: 1em;
+  color: #fff;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #444;
+}
+
+button:active {
+  background-color: #555;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 2px #fff;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background-color: #353535;
+}
+
+button:disabled:active {
+  background-color: #353535;
+}
+
+/* only for screen readers, not visible on screen */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.emoji-icon {
+  cursor: default;
+}
