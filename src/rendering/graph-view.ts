@@ -242,6 +242,12 @@ export class GraphView extends EventTarget {
     if (this.#selectedNode) {
       // Reset style of previously selected node
       this.#selectedNode.tint = 0xffffff;
+
+      if (this.#selectedNode === node) {
+        this.#selectedNode = null;
+        this.#appStateManager.set('sidebarArticle', null);
+        return;
+      }
     }
 
     this.#appStateManager.set('sidebarArticle', { id, dictionary });
