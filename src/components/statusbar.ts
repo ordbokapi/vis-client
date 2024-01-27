@@ -78,8 +78,10 @@ export class Statusbar extends StateManagedElement {
         }
 
         #statusbar > * {
-          height: 100%;
           margin: 0 0.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         #zoom-label {
@@ -93,6 +95,14 @@ export class Statusbar extends StateManagedElement {
           min-height: 1.5rem;
           min-width: 1px;
           clear: both;
+        }
+
+        .fill-width {
+          flex: 1;
+        }
+
+        #github-link img {
+          filter: invert(0.7);
         }
       </style>
       <div id="statusbar">
@@ -112,6 +122,29 @@ export class Statusbar extends StateManagedElement {
         </vis-tooltip-cue>
         <div class="separator"></div>
         <button id="center-view" title="CTRL+0">Sentrar vising</button>
+        <div class="fill-width"></div>
+        <a
+          href="https://github.com/ordbokapi/vis-client"
+          id="github-link"
+          class="btn"
+        >
+          <img
+            src="https://github.com/favicon.ico"
+            alt="GitHub-prosjekt"
+            title="GitHub-prosjekt"
+            width="24"
+            height="24"
+          />
+        </a>
+        <a href="https://ordbokapi.org" id="ordbokapi-link" class="btn">
+          <img
+            src="https://ordbokapi.org/favicon.ico"
+            alt="Ordbok-API"
+            title="Ordbok-API"
+            width="32"
+            height="32"
+          />
+        </a>
       </div>
     `;
     this.#root = this.shadowRoot!.querySelector('#statusbar') as HTMLDivElement;
