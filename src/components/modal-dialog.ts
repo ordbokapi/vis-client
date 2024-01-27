@@ -52,6 +52,21 @@ export class ModalDialog extends HTMLElement {
   #closeButton: HTMLButtonElement;
 
   /**
+   * The OK button.
+   */
+  #okButton: HTMLButtonElement;
+
+  /**
+   * The keydown event listener.
+   */
+  #keydownListener = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      this.close();
+    }
+  };
+
+  /**
    * The callback function to invoke when the dialog is closed.
    */
   #onClose?: () => void;
@@ -171,11 +186,12 @@ export class ModalDialog extends HTMLElement {
       '#close-button',
     ) as HTMLButtonElement;
     this.#closeButton.addEventListener('click', () => this.close());
-    this.shadowRoot!.querySelector('#ok-button')!.addEventListener(
-      'click',
-      () => this.close(),
-    );
+    this.#okButton = this.shadowRoot!.querySelector(
+      '#ok-button',
+    )! as HTMLButtonElement;
+    this.#okButton.addEventListener('click', () => this.close());
     this.#root.querySelector('#content')!.appendChild(this.#content);
+    window.addEventListener('keydown', this.#keydownListener);
   }
 
   /**
@@ -185,12 +201,17 @@ export class ModalDialog extends HTMLElement {
     this.style.display = 'block';
   }
 
+  connectedCallback() {
+    this.#okButton.focus();
+  }
+
   /**
    * Closes the dialog.
    */
   close() {
     this.style.display = 'none';
     this.parentNode?.removeChild(this);
+    window.removeEventListener('keydown', this.#keydownListener);
     this.#onClose?.();
   }
 }
