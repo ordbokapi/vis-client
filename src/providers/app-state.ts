@@ -27,6 +27,11 @@ export class AppState {
   translation = new Vector2D(0, 0);
 
   /**
+   * Whether the application is in debug mode.
+   */
+  debug = false;
+
+  /**
    * Converts an article ID and dictionary to a string.
    */
   static articleToString(
@@ -56,14 +61,22 @@ export class AppState {
    * Serializes the current state of the application to a query string.
    */
   serialize(): string {
-    const queryString = new URLSearchParams({
-      currentArticle: AppState.articleToString(this.currentArticle),
-      sidebarArticle: AppState.articleToString(this.sidebarArticle),
-      zoomLevel: Math.round(this.zoomLevel).toString(),
-      translation: this.translation.toString(),
-    }).toString();
+    const params = new URLSearchParams();
 
-    return queryString;
+    const addParam = (key: string, value: string | null | undefined) => {
+      if (value === null || value === undefined || value === '') return;
+
+      params.set(key, value);
+    };
+
+    addParam('currentArticle', AppState.articleToString(this.currentArticle));
+    addParam('sidebarArticle', AppState.articleToString(this.sidebarArticle));
+    addParam('zoomLevel', Math.round(this.zoomLevel).toString());
+    addParam('translation', this.translation.toString());
+
+    if (this.debug) addParam('debug', 'true');
+
+    return params.toString();
   }
 
   /**
@@ -92,6 +105,7 @@ export class AppState {
     trySet('sidebarArticle', (value) => AppState.stringToArticle(value));
     trySet('zoomLevel', (value) => Number.parseInt(value, 10));
     trySet('translation', (value) => Vector2D.parse(value));
+    trySet('debug', (value) => value === 'true');
 
     return state;
   }

@@ -75,7 +75,7 @@ export class Viewport extends StateManagedElement {
       backgroundColor: 0x1b1b1b,
       height: this.clientHeight,
       width: this.clientWidth,
-      antialias: true,
+      antialias: !this.appStateManager.get('debug'),
     });
 
     const view = this.app.view as HTMLCanvasElement;
@@ -140,7 +140,7 @@ export class Viewport extends StateManagedElement {
     });
 
     // add the graph view
-    this.graphView = new GraphView(this.viewport);
+    this.graphView = new GraphView(this.viewport, this.app);
 
     this.viewport.on('zoomed', () => {
       this.appStateManager.set('zoomLevel', this.viewport.scale.x * 100);

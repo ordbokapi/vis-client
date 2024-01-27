@@ -9,7 +9,9 @@ import {
   ArticleGraphEdge,
   ScopedAppStateManager,
 } from '../providers/index.js';
-import { Dictionary, Vector2D } from '../types/index.js';
+import { Dictionary, Vector2D, Rect2D } from '../types/index.js';
+import { BBoxCollisionForce } from './bbox-collision-force.js';
+import { DebugPanel } from './debug-panel.js';
 
 /**
  * Full-viewport graph view, built using D3 and a canvas. Nodes can be interacted with,
@@ -27,6 +29,11 @@ export class GraphView extends EventTarget {
   #viewport: Viewport;
 
   /**
+   * Pixi application instance.
+   */
+  #application: pixi.Application;
+
+  /**
    * PixiJS canvas for overlay.
    */
   #overlayCanvas: pixi.Graphics;
@@ -42,6 +49,26 @@ export class GraphView extends EventTarget {
   #nodeGraphics: pixi.Graphics[];
 
   /**
+   * PixiJS root container for nodes.
+   */
+  #nodeRoot: pixi.Container;
+
+  /**
+   * PixiJS canvas for debug drawing in the viewport.
+   */
+  #debugViewportCanvas?: pixi.Graphics;
+
+  /**
+   * PixiJS canvas for debug drawing directly in the application.
+   */
+  #debugAppCanvas?: pixi.Graphics;
+
+  /**
+   * Debug panel.
+   */
+  #debugPanel?: DebugPanel;
+
+  /**
    * D3 force simulation.
    */
   #simulation: d3.Simulation<
@@ -49,8 +76,10 @@ export class GraphView extends EventTarget {
     { source: number; target: number }
   >;
 
-  constructor(viewport: Viewport) {
+  constructor(viewport: Viewport, application: pixi.Application) {
     super();
+
+    this.#application = application;
 
     if (!(window as any).appStateManager) {
       (window as any).appStateManager = new AppStateManager();
@@ -64,6 +93,14 @@ export class GraphView extends EventTarget {
     this.#viewport = viewport;
     this.#overlayCanvas = this.#viewport.addChild(new pixi.Graphics());
     this.#edgeCanvas = this.#viewport.addChild(new pixi.Graphics());
+    this.#nodeRoot = this.#viewport.addChild(new pixi.Container());
+
+    if (this.#appStateManager.get('debug')) {
+      this.#debugViewportCanvas = this.#viewport.addChild(new pixi.Graphics());
+      this.#debugAppCanvas = this.#application.stage.addChild(
+        new pixi.Graphics(),
+      );
+    }
     this.#nodeGraphics = [];
 
     this.#simulation = d3
@@ -76,78 +113,32 @@ export class GraphView extends EventTarget {
             { source: number; target: number }
           >()
           .id((d) => d.id)
-          .strength(0.05),
+          .strength(0.1),
       )
-      .force('charge', d3.forceManyBody().strength(-50))
-      // d3 collision force only works with circles, so we use a custom
-      // implementation instead that uses the PixiJS rectangle bounding boxes
-      .force('collision', () => {
-        const nodes = this.#simulation.nodes();
-        const quadtree = d3.quadtree(
-          nodes,
-          (d) => d.x!,
-          (d) => d.y!,
-        );
-
-        nodes.forEach((node) => {
-          const nodeBounds =
-            this.#nodeGraphics[nodes.indexOf(node)].getBounds();
-          quadtree.visit((quad) => {
-            if (!quad) return;
-
-            if ('data' in quad && quad.data !== node) {
-              const quadNodeBounds =
-                this.#nodeGraphics[nodes.indexOf(quad.data)].getBounds();
-
-              // expand bounds slightly to give nodes some breathing room
-              const margin = 10;
-
-              quadNodeBounds.x -= margin;
-              quadNodeBounds.y -= margin;
-              quadNodeBounds.width += margin;
-              quadNodeBounds.height += margin;
-
-              // Calculate overlap and apply force to separate nodes
-
-              // Calculate overlap on x-axis
-              const xOverlap = Math.max(
-                0,
-                Math.min(nodeBounds.right, quadNodeBounds.right) -
-                  Math.max(nodeBounds.left, quadNodeBounds.left),
-              );
-              // Calculate overlap on y-axis
-              const yOverlap = Math.max(
-                0,
-                Math.min(nodeBounds.bottom, quadNodeBounds.bottom) -
-                  Math.max(nodeBounds.top, quadNodeBounds.top),
-              );
-
-              // Calculate total overlap
-              const overlap = xOverlap * yOverlap;
-
-              // Adjust node position if overlap exists
-              if (overlap > 0) {
-                const force =
-                  (overlap * 20) / (nodeBounds.width * nodeBounds.height);
-                const dx = node.x! - quad.data.x! || 1;
-                const dy = node.y! - quad.data.y! || 1;
-                const angle = Math.atan2(dy, dx);
-                node.x! += Math.cos(angle) * force + Math.random() * 0.1;
-                node.y! += Math.sin(angle) * force + Math.random() * 0.1;
-              }
-            }
-
-            // Return false to only check nodes in the current quad
-            return false;
-          });
-        });
-      })
+      .force('charge', d3.forceManyBody().strength(-100))
+      .force('center', d3.forceCenter(0, 0).strength(1))
       .force(
-        'center',
-        d3.forceCenter(this.#viewport.width / 2, this.#viewport.height / 2),
+        'collide',
+        new BBoxCollisionForce(
+          this.#viewport,
+          this.#nodeGraphics,
+          this.#debugViewportCanvas,
+          this.#debugAppCanvas,
+        )
+          .strength(2)
+          .ticksToWait(200)
+          .getD3Force(),
       )
-      .alphaTarget(0.1)
-      .on('tick', () => this.#tick());
+      .alphaDecay(0.02)
+      .alphaTarget(0)
+      .velocityDecay(0.5);
+
+    // tick only fires when the simulation is running, so we need to manually
+    // call it every frame
+
+    this.#application.ticker.add(() => {
+      this.#tick();
+    });
 
     this.#viewport.on('zoomed', () => {
       const textResolution = this.#viewport.scale.x;
@@ -162,7 +153,7 @@ export class GraphView extends EventTarget {
   setGraph(graph: ArticleGraph) {
     this.#setNodes(graph.nodes);
     this.#setLinks(graph.edges);
-    this.#simulation.alpha(1).restart();
+    this.#simulation.alpha(2).restart().tick(200).alpha(1);
     this.#renderIsEmptyOverlay();
   }
 
@@ -238,8 +229,8 @@ export class GraphView extends EventTarget {
 
   #createNodeGraphics() {
     // Remove old nodes
-    this.#nodeGraphics.forEach((node) => this.#viewport.removeChild(node));
-    this.#nodeGraphics = [];
+    this.#nodeGraphics.forEach((node) => this.#nodeRoot.removeChild(node));
+    this.#nodeGraphics.length = 0;
 
     // Create new nodes
     this.#simulation.nodes().forEach((d) => {
@@ -282,7 +273,7 @@ export class GraphView extends EventTarget {
 
       node.x = d.x!;
       node.y = d.y!;
-      this.#viewport.addChild(node);
+      this.#nodeRoot.addChild(node);
       this.#nodeGraphics.push(node);
 
       node.eventMode = 'dynamic';
@@ -327,6 +318,8 @@ export class GraphView extends EventTarget {
           const newPosition = data.subtract(anchorOffset);
           d.fx = newPosition.x;
           d.fy = newPosition.y;
+          d.x = newPosition.x;
+          d.y = newPosition.y;
         }
       });
 
@@ -373,9 +366,80 @@ export class GraphView extends EventTarget {
       });
 
     // Update node positions
+    const simulationNodes = this.#simulation.nodes();
     this.#nodeGraphics.forEach((node, i) => {
-      node.x = this.#simulation.nodes()[i].x!;
-      node.y = this.#simulation.nodes()[i].y!;
+      node.x = simulationNodes[i].x!;
+      node.y = simulationNodes[i].y!;
     });
+
+    if (this.#appStateManager.get('debug') && this.#selectedNode) {
+      if (!this.#debugPanel) {
+        this.#debugPanel = new DebugPanel(
+          this.#application.stage.addChild(new pixi.Graphics()),
+          new Rect2D(20, 500, 200, 200),
+        );
+      }
+
+      const node =
+        simulationNodes[this.#nodeGraphics.indexOf(this.#selectedNode)];
+
+      const velocity = new Vector2D(node.vx, node.vy);
+      const velocityAngle = velocity.angle();
+
+      let direction = '';
+      if (velocityAngle >= -Math.PI / 8 && velocityAngle < Math.PI / 8) {
+        direction = 'E';
+      } else if (
+        velocityAngle >= Math.PI / 8 &&
+        velocityAngle < (3 * Math.PI) / 8
+      ) {
+        direction = 'SE';
+      } else if (
+        velocityAngle >= (3 * Math.PI) / 8 &&
+        velocityAngle < (5 * Math.PI) / 8
+      ) {
+        direction = 'S';
+      } else if (
+        velocityAngle >= (5 * Math.PI) / 8 &&
+        velocityAngle < (7 * Math.PI) / 8
+      ) {
+        direction = 'SW';
+      } else if (
+        velocityAngle >= (7 * Math.PI) / 8 ||
+        velocityAngle < (-7 * Math.PI) / 8
+      ) {
+        direction = 'W';
+      } else if (
+        velocityAngle >= (-7 * Math.PI) / 8 &&
+        velocityAngle < (-5 * Math.PI) / 8
+      ) {
+        direction = 'NW';
+      } else if (
+        velocityAngle >= (-5 * Math.PI) / 8 &&
+        velocityAngle < (-3 * Math.PI) / 8
+      ) {
+        direction = 'N';
+      } else if (
+        velocityAngle >= (-3 * Math.PI) / 8 &&
+        velocityAngle < -Math.PI / 8
+      ) {
+        direction = 'NE';
+      }
+
+      this.#debugPanel.setText(0, `ID: ${node.id}`);
+      this.#debugPanel.setText(1, `Dictionary: ${node.dictionary}`);
+      this.#debugPanel.setText(2, `X: ${node.x?.toFixed(2)}`);
+      this.#debugPanel.setText(3, `Y: ${node.y?.toFixed(2)}`);
+      this.#debugPanel.setText(4, `VX: ${node.vx?.toFixed(2)}`);
+      this.#debugPanel.setText(5, `VY: ${node.vy?.toFixed(2)}`);
+      this.#debugPanel.setText(
+        6,
+        `Velocity magnitude: ${velocity.magnitude.toFixed(2)}`,
+      );
+      this.#debugPanel.setText(
+        7,
+        `Velocity angle: ${velocityAngle.toFixed(2)} (${direction})`,
+      );
+    }
   }
 }

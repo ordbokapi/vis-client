@@ -115,6 +115,19 @@ export class Vector2D {
   }
 
   /**
+   * Normalize this vector.
+   * @param length Length to normalize to. If undefined, the vector is
+   * normalized to a length of 1.
+   */
+  normalize(length?: number): Vector2D {
+    if (length) {
+      return this.unit.multiply(length);
+    } else {
+      return this.unit;
+    }
+  }
+
+  /**
    * Get the dot product of this vector and another vector.
    * @param v Vector to get the dot product with.
    */
@@ -148,10 +161,57 @@ export class Vector2D {
   }
 
   /**
-   * Returns a string representation of this vector.
+   * Floors the x and y coordinates of this vector.
    */
-  toString(): string {
-    return `(${this.x},${this.y})`;
+  floor(): Vector2D {
+    return new Vector2D(Math.floor(this.x), Math.floor(this.y));
+  }
+
+  /**
+   * Rounds the x and y coordinates of this vector.
+   */
+  round(): Vector2D {
+    return new Vector2D(Math.round(this.x), Math.round(this.y));
+  }
+
+  /**
+   * Ceils the x and y coordinates of this vector.
+   */
+  ceil(): Vector2D {
+    return new Vector2D(Math.ceil(this.x), Math.ceil(this.y));
+  }
+
+  /**
+   * Returns a copy of this vector.
+   */
+  copy(): Vector2D {
+    return new Vector2D(this.x, this.y);
+  }
+
+  /**
+   * Returns whether this vector is equal to another vector.
+   * @param vector Vector to compare with.
+   * @param epsilon Epsilon value for floating point comparison. If undefined, no
+   * epsilon is used.
+   */
+  equals(vector: Vector2D, epsilon?: number): boolean {
+    if (epsilon) {
+      return (
+        Math.abs(this.x - vector.x) < epsilon &&
+        Math.abs(this.y - vector.y) < epsilon
+      );
+    } else {
+      return this.x === vector.x && this.y === vector.y;
+    }
+  }
+
+  /**
+   * Returns a string representation of this vector.
+   * @param precision Number of decimal places to round to. If undefined, no
+   * rounding is done.
+   */
+  toString(precision?: number): string {
+    return `(${this.x.toFixed(precision)},${this.y.toFixed(precision)})`;
   }
 
   /**
