@@ -69,6 +69,18 @@ export class GraphView extends EventTarget {
   #debugPanel?: DebugPanel;
 
   /**
+   * The current graph being displayed.
+   */
+  #graph?: ArticleGraph;
+
+  /**
+   * The current graph being displayed.
+   */
+  get graph() {
+    return this.#graph;
+  }
+
+  /**
    * D3 force simulation.
    */
   #simulation: d3.Simulation<
@@ -127,6 +139,9 @@ export class GraphView extends EventTarget {
         )
           .strength(2)
           .ticksToWait(200)
+          .onStart(() => {
+            this.#appStateManager.emit('start-sim');
+          })
           .getD3Force(),
       )
       .alphaDecay(0.02)
@@ -150,7 +165,16 @@ export class GraphView extends EventTarget {
     });
   }
 
-  setGraph(graph: ArticleGraph) {
+  setGraph(graph: ArticleGraph | undefined) {
+    this.#graph = graph;
+
+    if (!graph) {
+      this.#setNodes([]);
+      this.#setLinks([]);
+      this.#renderIsEmptyOverlay();
+      return;
+    }
+
     this.#setNodes(graph.nodes);
     this.#setLinks(graph.edges);
     this.#simulation.alpha(2).restart().tick(200).alpha(1);

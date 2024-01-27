@@ -164,6 +164,20 @@ export class Viewport extends StateManagedElement {
       this.viewport.moveCenter(translation.x, translation.y);
     });
 
+    this.appStateManager.on('reload', () => {
+      if (!this.graphView.graph) return;
+
+      this.#loadingOverlay.style.display = '';
+
+      window.setTimeout(() => {
+        this.graphView.setGraph(this.graphView.graph);
+      }, 100);
+    });
+
+    this.appStateManager.on('start-sim', () => {
+      this.#loadingOverlay.style.display = 'none';
+    });
+
     this.#client = new ApiClient();
   }
 
@@ -250,9 +264,9 @@ export class Viewport extends StateManagedElement {
       3,
     );
 
-    this.#loadingOverlay.style.display = 'none';
-
     if (errors.length > 0) {
+      this.#loadingOverlay.style.display = 'none';
+
       const dialog = new ModalDialog({
         title: '⚠️ Feil',
         html: html`

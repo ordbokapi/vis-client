@@ -1,5 +1,6 @@
-import { AppState } from './app-state.js';
 import { TwoKeyMap } from '../types/index.js';
+import { AppState } from './app-state.js';
+import { AppEvent } from './app-events.js';
 
 /**
  * Manages state for the application. Allows for state to be shared between
@@ -44,6 +45,33 @@ export interface ScopedAppStateManager {
     key: K,
     listener: (value: AppState[K]) => void,
   ): void;
+
+  /**
+   * Adds a listener for the given event. The listener is called when the event
+   * is emitted.
+   * @param event The event to listen for.
+   * @param listener The listener to call when the event is emitted.
+   */
+  on<E extends AppEvent['name']>(
+    event: E,
+    listener: (...args: AppEvent['args']) => void,
+  ): void;
+
+  /**
+   * Removes a listener for the given event.
+   * @param event The event to remove the listener for.
+   * @param listener The listener to remove.
+   */
+  off<E extends AppEvent['name']>(
+    event: E,
+    listener: (...args: AppEvent['args']) => void,
+  ): void;
+
+  /**
+   * Emits an event.
+   * @param event The event to emit.
+   */
+  emit<E extends AppEvent['name']>(event: E, ...args: AppEvent['args']): void;
 }
 
 /**
@@ -76,8 +104,20 @@ export class AppStateManager {
   /**
    * Listeners that are notified when the app state changes.
    */
-  private listeners: TwoKeyMap<keyof AppState, object, Set<Function>> =
-    new TwoKeyMap();
+  #observers: TwoKeyMap<
+    keyof AppState,
+    object,
+    Set<(value: AppState[keyof AppState]) => void>
+  > = new TwoKeyMap();
+
+  /**
+   * Listeners that are notified of app-wide events.
+   */
+  #listeners: TwoKeyMap<
+    AppEvent['name'],
+    object,
+    Set<(...args: AppEvent['args']) => void>
+  > = new TwoKeyMap();
 
   /**
    * Creates a new app state manager, initializing the state from the location's
@@ -106,6 +146,9 @@ export class AppStateManager {
       set: (key, value) => this.set(subscriber, key, value),
       observe: (key, listener) => this.observe(subscriber, key, listener),
       unobserve: (key, listener) => this.unobserve(subscriber, key, listener),
+      on: (event, listener) => this.on(subscriber, event, listener),
+      off: (event, listener) => this.off(subscriber, event, listener),
+      emit: (event, ...args) => this.emit(subscriber, event, ...args),
     };
   }
 
@@ -149,11 +192,11 @@ export class AppStateManager {
     key: K,
     listener: (value: AppState[K]) => void,
   ) {
-    let set = this.listeners.get(key, subscriber);
+    let set = this.#observers.get(key, subscriber);
 
     if (!set) {
       set = new Set();
-      this.listeners.set(key, subscriber, set);
+      this.#observers.set(key, subscriber, set);
     }
 
     set.add(listener as (value: AppState[keyof AppState]) => void);
@@ -170,7 +213,7 @@ export class AppStateManager {
     key: K,
     listener: (value: AppState[K]) => void,
   ) {
-    const set = this.listeners.get(key, subscriber);
+    const set = this.#observers.get(key, subscriber);
     if (!set) return;
 
     set.delete(listener as (value: AppState[keyof AppState]) => void);
@@ -187,7 +230,7 @@ export class AppStateManager {
     key: K,
     value: AppState[K],
   ) {
-    for (const [sub, listeners] of this.listeners.entriesForKey1(key)) {
+    for (const [sub, listeners] of this.#observers.entriesForKey1(key)) {
       if (sub === subscriber) continue;
 
       for (const listener of listeners) {
@@ -233,8 +276,75 @@ export class AppStateManager {
   #updateStateFromQueryString() {
     this.#state = AppState.deserialize();
 
-    for (const [key] of this.listeners.keys()) {
+    for (const [key] of this.#observers.keys()) {
       this.#notifyListeners(this, key, this.#state[key]);
+    }
+  }
+
+  // Event handling
+  // About the same as the observer handling, but with data types specific to
+  // events instead of data from the app state.
+  // Just as with observers, a provider does not receive events that it emits.
+
+  /**
+   * Adds a listener for the given event. The listener is called when the event
+   * is emitted.
+   * @param subscriber The subscriber that is adding the listener.
+   * @param event The event to listen for.
+   * @param listener The listener to call when the event is emitted.
+   */
+  on<E extends AppEvent['name']>(
+    subscriber: object,
+    event: E,
+    listener: (...args: AppEvent['args']) => void,
+  ) {
+    let set = this.#listeners.get(event, subscriber);
+
+    if (!set) {
+      set = new Set();
+      this.#listeners.set(event, subscriber, set);
+    }
+
+    set.add(listener);
+  }
+
+  /**
+   * Removes a listener for the given event.
+   * @param subscriber The subscriber to remove the listener for.
+   * @param event The event to remove the listener for.
+   * @param listener The listener to remove.
+   */
+  off<E extends AppEvent['name']>(
+    subscriber: object,
+    event: E,
+    listener: (...args: AppEvent['args']) => void,
+  ) {
+    const set = this.#listeners.get(event, subscriber);
+    if (!set) return;
+
+    set.delete(listener);
+  }
+
+  /**
+   * Emits an event.
+   * @param subscriber The subscriber that is emitting the event.
+   * @param event The event to emit.
+   */
+  emit<E extends AppEvent['name']>(
+    subscriber: object,
+    event: E,
+    ...args: AppEvent['args']
+  ) {
+    for (const [sub, listeners] of this.#listeners.entriesForKey1(event)) {
+      if (sub === subscriber) continue;
+
+      for (const listener of listeners) {
+        try {
+          listener(...args);
+        } catch (error) {
+          console.warn(`Failed to notify listener for ${event}: ${error}`);
+        }
+      }
     }
   }
 }

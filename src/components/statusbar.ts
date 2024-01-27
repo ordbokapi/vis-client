@@ -107,7 +107,7 @@ export class Statusbar extends StateManagedElement {
       </style>
       <div id="statusbar">
         <span class="emoji-icon" title="Zoom-kontroller">🔍</span>
-        <button id="zoom-out" title="Zoom ut">➖</button>
+        <button id="zoom-out" title="Zoom ut (CTRL+-)">➖</button>
         <input
           id="zoom-label"
           type="text"
@@ -115,13 +115,20 @@ export class Statusbar extends StateManagedElement {
           maxlength="5"
           title="Zoom-nivå"
         />
-        <button id="zoom-in" title="Zoom inn">➕</button>
+        <button id="zoom-in" title="Zoom inn (CTRL++)">➕</button>
         <vis-tooltip-cue
           tooltip="Hald Shift nede medan du trykkjer for å zooma sakte"
         >
         </vis-tooltip-cue>
         <div class="separator"></div>
         <button id="center-view" title="CTRL+0">Sentrar vising</button>
+        <div class="separator"></div>
+        <button
+          id="restart-simulation"
+          title="Start simulering på nytt (CTRL+1)"
+        >
+          🔄
+        </button>
         <div class="fill-width"></div>
         <a
           href="https://github.com/ordbokapi/vis-client"
@@ -162,6 +169,12 @@ export class Statusbar extends StateManagedElement {
     });
 
     this.#root
+      .querySelector('#restart-simulation')!
+      .addEventListener('click', () => {
+        this.appStateManager.emit('reload');
+      });
+
+    this.#root
       .querySelector('#zoom-label')!
       .addEventListener('change', (event: Event) => {
         const target = event.target as HTMLInputElement;
@@ -182,8 +195,25 @@ export class Statusbar extends StateManagedElement {
       });
 
     window.addEventListener('keydown', (event) => {
-      if (event.ctrlKey && event.key === '0') {
-        this.appStateManager.set('translation', new Vector2D(0, 0));
+      if (event.ctrlKey) {
+        switch (event.key) {
+          case '+':
+            event.preventDefault();
+            this.#zoom('in', event.shiftKey);
+            break;
+          case '-':
+            event.preventDefault();
+            this.#zoom('out', event.shiftKey);
+            break;
+          case '0':
+            event.preventDefault();
+            this.appStateManager.set('translation', new Vector2D(0, 0));
+            break;
+          case '1':
+            event.preventDefault();
+            this.appStateManager.emit('reload');
+            break;
+        }
       }
     });
 

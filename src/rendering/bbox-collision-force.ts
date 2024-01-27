@@ -78,6 +78,11 @@ export class BBoxCollisionForce {
   #maxForce = new Vector2D(0, 0);
 
   /**
+   * Listeners to call when the force starts to take effect.
+   */
+  #onStartListeners: (() => void)[] = [];
+
+  /**
    * Initializes the force.
    * @param viewport The viewport used to render the graph.
    * @param nodeGraphics The graphics objects that represent the nodes.
@@ -164,6 +169,16 @@ export class BBoxCollisionForce {
   }
 
   /**
+   * Adds a listener to call when the force starts to take effect.
+   * @param listener The listener to call when the force starts to take effect.
+   */
+  onStart(listener: () => void) {
+    this.#onStartListeners.push(listener);
+
+    return this;
+  }
+
+  /**
    * Applies the force.
    * @param alpha The current alpha value.
    */
@@ -191,6 +206,18 @@ export class BBoxCollisionForce {
     if (this.#ticksSinceNewNodes < this.#ticksToWait) {
       this.#ticksSinceNewNodes++;
       return;
+    } else if (this.#ticksSinceNewNodes === this.#ticksToWait) {
+      window.requestAnimationFrame(() => {
+        for (const listener of this.#onStartListeners) {
+          try {
+            listener();
+          } catch (error) {
+            console.warn('Failed to notify listener:', error);
+          }
+        }
+      });
+
+      this.#ticksSinceNewNodes++;
     }
 
     const scale = new Vector2D(this.#viewport.scale);
