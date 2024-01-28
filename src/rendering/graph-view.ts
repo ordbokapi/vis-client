@@ -178,6 +178,7 @@ export class GraphView extends EventTarget {
         );
       });
       this.#appStateManager.set('nodePositions', nodePositions);
+      this.#appStateManager.emit('node-positions');
     });
   }
 

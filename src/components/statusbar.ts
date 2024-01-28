@@ -181,7 +181,7 @@ export class Statusbar extends StateManagedElement {
       this.appStateManager.emit('request-node-positions');
     });
 
-    this.appStateManager.observe('nodePositions', (nodePositions) => {
+    this.appStateManager.on('node-positions', () => {
       const url = new URL(window.location.href);
       url.search = this.appStateManager.serialize(true);
       navigator.clipboard.writeText(url.toString());
