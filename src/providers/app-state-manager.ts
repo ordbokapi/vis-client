@@ -59,7 +59,7 @@ export interface ScopedAppStateManager {
    */
   on<E extends AppEvent['name']>(
     event: E,
-    listener: (...args: AppEvent['args']) => void,
+    listener: (...args: (AppEvent & { name: E })['args']) => void,
   ): void;
 
   /**
@@ -69,14 +69,17 @@ export interface ScopedAppStateManager {
    */
   off<E extends AppEvent['name']>(
     event: E,
-    listener: (...args: AppEvent['args']) => void,
+    listener: (...args: (AppEvent & { name: E })['args']) => void,
   ): void;
 
   /**
    * Emits an event.
    * @param event The event to emit.
    */
-  emit<E extends AppEvent['name']>(event: E, ...args: AppEvent['args']): void;
+  emit<E extends AppEvent['name']>(
+    event: E,
+    ...args: (AppEvent & { name: E })['args']
+  ): void;
 }
 
 /**
@@ -152,9 +155,10 @@ export class AppStateManager {
       observe: (key, listener) => this.observe(subscriber, key, listener),
       unobserve: (key, listener) => this.unobserve(subscriber, key, listener),
       serialize: () => this.#state.serialize(),
-      on: (event, listener) => this.on(subscriber, event, listener),
-      off: (event, listener) => this.off(subscriber, event, listener),
-      emit: (event, ...args) => this.emit(subscriber, event, ...args),
+      on: (event, listener) => this.on(subscriber, event as any, listener),
+      off: (event, listener) => this.off(subscriber, event as any, listener),
+      emit: (event, ...args) =>
+        this.emit(subscriber, event, ...(args as never)),
     };
   }
 
@@ -302,7 +306,7 @@ export class AppStateManager {
   on<E extends AppEvent['name']>(
     subscriber: object,
     event: E,
-    listener: (...args: AppEvent['args']) => void,
+    listener: (...args: (AppEvent & { name: E })['args']) => void,
   ) {
     let set = this.#listeners.get(event, subscriber);
 
@@ -311,7 +315,7 @@ export class AppStateManager {
       this.#listeners.set(event, subscriber, set);
     }
 
-    set.add(listener);
+    set.add(listener as (...args: AppEvent['args']) => void);
   }
 
   /**
@@ -323,12 +327,12 @@ export class AppStateManager {
   off<E extends AppEvent['name']>(
     subscriber: object,
     event: E,
-    listener: (...args: AppEvent['args']) => void,
+    listener: (...args: (AppEvent & { name: E })['args']) => void,
   ) {
     const set = this.#listeners.get(event, subscriber);
     if (!set) return;
 
-    set.delete(listener);
+    set.delete(listener as (...args: AppEvent['args']) => void);
   }
 
   /**
@@ -339,7 +343,7 @@ export class AppStateManager {
   emit<E extends AppEvent['name']>(
     subscriber: object,
     event: E,
-    ...args: AppEvent['args']
+    ...args: (AppEvent & { name: E })['args']
   ) {
     for (const [sub, listeners] of this.#listeners.entriesForKey1(event)) {
       if (sub === subscriber) continue;

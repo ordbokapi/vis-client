@@ -32,6 +32,11 @@ export class AppState {
   debug = false;
 
   /**
+   * The node positions for the current graph view.
+   */
+  nodePositions?: { [id: string]: Vector2D };
+
+  /**
    * Converts an article ID and dictionary to a string.
    */
   static articleToString(
@@ -106,6 +111,7 @@ export class AppState {
     trySet('zoomLevel', (value) => Number.parseInt(value, 10));
     trySet('translation', (value) => Vector2D.parse(value));
     trySet('debug', (value) => value === 'true');
+    trySet('nodePositions', (value) => JSON.parse(value));
 
     return state;
   }

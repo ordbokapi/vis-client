@@ -178,11 +178,19 @@ export class Statusbar extends StateManagedElement {
       });
 
     this.#root.querySelector('#share-link')!.addEventListener('click', () => {
+      this.appStateManager.emit('request-node-positions');
+    });
+
+    this.appStateManager.on('node-positions', (nodePositions) => {
       const url = new URL(window.location.href);
-      const queryString = this.appStateManager.serialize();
-      url.search = queryString;
+      const urlParams = new URLSearchParams(this.appStateManager.serialize());
+
+      urlParams.append('nodePositions', JSON.stringify(nodePositions));
+      url.search = urlParams.toString();
       navigator.clipboard.writeText(url.toString());
+
       const popOver = new PopOver();
+
       popOver.text = 'Lenke kopiert til utklippstavla';
       popOver.target = this.#root.querySelector('#share-link')! as HTMLElement;
       popOver.show();

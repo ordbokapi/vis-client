@@ -163,6 +163,14 @@ export class GraphView extends EventTarget {
       });
       this.#renderIsEmptyOverlay();
     });
+
+    this.#appStateManager.on('request-node-positions', () => {
+      const nodePositions: { [id: number]: Vector2D } = {};
+      this.#simulation.nodes().forEach((node) => {
+        nodePositions[node.id] = new Vector2D(node.x!, node.y!);
+      });
+      this.#appStateManager.emit('node-positions', nodePositions);
+    });
   }
 
   setGraph(graph: ArticleGraph | undefined) {
@@ -177,6 +185,30 @@ export class GraphView extends EventTarget {
 
     this.#setNodes(graph.nodes);
     this.#setLinks(graph.edges);
+
+    const nodePositions = this.#appStateManager.get('nodePositions');
+    if (nodePositions) {
+      this.#appStateManager.set('nodePositions', undefined);
+      let missed = false;
+      this.#simulation.nodes().forEach((node) => {
+        const position = nodePositions[node.id];
+        if (position) {
+          node.x = position.x;
+          node.y = position.y;
+        } else {
+          missed = true;
+        }
+      });
+
+      if (!missed) {
+        this.#renderIsEmptyOverlay();
+        this.#appStateManager.emit('start-sim');
+        this.#simulation.stop();
+
+        return;
+      }
+    }
+
     this.#simulation.alpha(2).restart().tick(200).alpha(1);
     this.#renderIsEmptyOverlay();
   }
