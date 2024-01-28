@@ -172,7 +172,10 @@ export class GraphView extends EventTarget {
     this.#appStateManager.on('request-node-positions', () => {
       const nodePositions: { [id: number]: Vector2D } = {};
       this.#simulation.nodes().forEach((node) => {
-        nodePositions[node.id] = new Vector2D(node.x!, node.y!);
+        nodePositions[node.id] = new Vector2D(
+          Math.round(node.x!),
+          Math.round(node.y!),
+        );
       });
       this.#appStateManager.set('nodePositions', nodePositions);
     });
