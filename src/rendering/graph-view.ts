@@ -81,6 +81,11 @@ export class GraphView extends EventTarget {
   }
 
   /**
+   * Whether or not this is the first time the graph has been rendered.
+   */
+  #firstRender = true;
+
+  /**
    * D3 force simulation.
    */
   #simulation: d3.Simulation<
@@ -169,7 +174,7 @@ export class GraphView extends EventTarget {
       this.#simulation.nodes().forEach((node) => {
         nodePositions[node.id] = new Vector2D(node.x!, node.y!);
       });
-      this.#appStateManager.emit('node-positions', nodePositions);
+      this.#appStateManager.set('nodePositions', nodePositions);
     });
   }
 
@@ -186,26 +191,28 @@ export class GraphView extends EventTarget {
     this.#setNodes(graph.nodes);
     this.#setLinks(graph.edges);
 
-    const nodePositions = this.#appStateManager.get('nodePositions');
-    if (nodePositions) {
-      this.#appStateManager.set('nodePositions', undefined);
-      let missed = false;
-      this.#simulation.nodes().forEach((node) => {
-        const position = nodePositions[node.id];
-        if (position) {
-          node.x = position.x;
-          node.y = position.y;
-        } else {
-          missed = true;
+    if (this.#firstRender) {
+      this.#firstRender = false;
+      const nodePositions = this.#appStateManager.get('nodePositions');
+      if (nodePositions) {
+        let missed = false;
+        this.#simulation.nodes().forEach((node) => {
+          const position = nodePositions[node.id];
+          if (position) {
+            node.x = position.x;
+            node.y = position.y;
+          } else {
+            missed = true;
+          }
+        });
+
+        if (!missed) {
+          this.#renderIsEmptyOverlay();
+          this.#appStateManager.emit('start-sim');
+          this.#simulation.stop();
+
+          return;
         }
-      });
-
-      if (!missed) {
-        this.#renderIsEmptyOverlay();
-        this.#appStateManager.emit('start-sim');
-        this.#simulation.stop();
-
-        return;
       }
     }
 

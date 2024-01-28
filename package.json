@@ -3,6 +3,7 @@
   "packageManager": "yarn@4.0.2",
   "type": "module",
   "dependencies": {
+    "@msgpack/msgpack": "^3.0.0-beta2",
     "@pixi/core": "^7.3.3",
     "@pixi/display": "^7.3.3",
     "d3": "^7.8.5",
@@ -14,6 +15,7 @@
     "@parcel/transformer-inline-string": "2.11.0",
     "@parcel/transformer-webmanifest": "2.11.0",
     "@types/d3": "^7.4.3",
+    "buffer": "^5.5.0||^6.0.0",
     "parcel": "^2.11.0",
     "prettier": "^3.2.4",
     "punycode": "^1.4.1",

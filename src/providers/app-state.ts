@@ -1,5 +1,6 @@
 import { Article } from './api-client.js';
 import { Dictionary, Vector2D } from '../types/index.js';
+import * as msgpack from '@msgpack/msgpack';
 
 /**
  * Manages state for the application. Allows for state to be shared between
@@ -64,8 +65,10 @@ export class AppState {
 
   /**
    * Serializes the current state of the application to a query string.
+   * @param all Whether to include all state, or just the state that should be
+   * routinely kept in the URL.
    */
-  serialize(): string {
+  serialize(all = false): string {
     const params = new URLSearchParams();
 
     const addParam = (key: string, value: string | null | undefined) => {
@@ -80,6 +83,15 @@ export class AppState {
     addParam('translation', this.translation.toString());
 
     if (this.debug) addParam('debug', 'true');
+
+    if (all && this.nodePositions) {
+      const nodePositions: { [id: string]: { x: number; y: number } } = {};
+      for (const [key, value] of Object.entries(this.nodePositions)) {
+        nodePositions[key] = { x: value.x, y: value.y };
+      }
+      const encoded = msgpack.encode(nodePositions);
+      addParam('nodePositions', btoa(String.fromCharCode(...encoded)));
+    }
 
     return params.toString();
   }
@@ -111,7 +123,18 @@ export class AppState {
     trySet('zoomLevel', (value) => Number.parseInt(value, 10));
     trySet('translation', (value) => Vector2D.parse(value));
     trySet('debug', (value) => value === 'true');
-    trySet('nodePositions', (value) => JSON.parse(value));
+    trySet('nodePositions', (value) => {
+      const decoded = msgpack.decode(
+        Uint8Array.from(atob(value), (c) => c.charCodeAt(0)),
+      );
+      const nodePositions: { [id: string]: Vector2D } = {};
+      for (const [key, value] of Object.entries(
+        decoded as Record<string, { x: number; y: number }>,
+      )) {
+        nodePositions[key] = new Vector2D(value.x, value.y);
+      }
+      return nodePositions;
+    });
 
     return state;
   }

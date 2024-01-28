@@ -22,8 +22,10 @@ export interface ScopedAppStateManager {
 
   /**
    * Serializes the current state of the application to a query string.
+   * @param all Whether to include all state, or just the state that should be
+   * routinely kept in the URL.
    */
-  serialize(): string;
+  serialize(all?: boolean): string;
 
   /**
    * Adds a listener for the given key. The listener is called when the value
@@ -154,7 +156,7 @@ export class AppStateManager {
       set: (key, value) => this.set(subscriber, key, value),
       observe: (key, listener) => this.observe(subscriber, key, listener),
       unobserve: (key, listener) => this.unobserve(subscriber, key, listener),
-      serialize: () => this.#state.serialize(),
+      serialize: (all) => this.#state.serialize(all),
       on: (event, listener) => this.on(subscriber, event as any, listener),
       off: (event, listener) => this.off(subscriber, event as any, listener),
       emit: (event, ...args) =>
@@ -350,7 +352,7 @@ export class AppStateManager {
 
       for (const listener of listeners) {
         try {
-          listener(...args);
+          listener(...(args as []));
         } catch (error) {
           console.warn(`Failed to notify listener for ${event}: ${error}`);
         }
