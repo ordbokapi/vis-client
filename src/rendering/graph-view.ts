@@ -12,6 +12,7 @@ import {
 import { Dictionary, Vector2D, Rect2D } from '../types/index.js';
 import { BBoxCollisionForce } from './bbox-collision-force.js';
 import { DebugPanel } from './debug-panel.js';
+import { TwoKeyMap } from '../types/index.js';
 
 /**
  * Full-viewport graph view, built using D3 and a canvas. Nodes can be interacted with,
@@ -92,6 +93,11 @@ export class GraphView extends EventTarget {
     d3.SimulationNodeDatum & Article,
     { source: number; target: number }
   >;
+
+  /**
+   * Map of IDs and dictionaries to node PIXI objects.
+   */
+  #nodeMap: TwoKeyMap<number, Dictionary, pixi.Graphics> = new TwoKeyMap();
 
   constructor(viewport: Viewport, application: pixi.Application) {
     super();
@@ -179,6 +185,19 @@ export class GraphView extends EventTarget {
       });
       this.#appStateManager.set('nodePositions', nodePositions);
       this.#appStateManager.emit('node-positions');
+    });
+
+    this.#appStateManager.observe('currentArticle', (article) => {
+      if (!article) {
+        return;
+      }
+
+      const node = this.#nodeMap.get(article.id, article.dictionary);
+      if (!node) {
+        return;
+      }
+
+      this.#selectNode(node, article.id, article.dictionary);
     });
   }
 
@@ -326,7 +345,12 @@ export class GraphView extends EventTarget {
       const width = textBounds.width + paddingX;
       const height = textBounds.height + paddingY;
       const cornerRadius = 20;
-      const color = 0x1b1b1b;
+      // colour the root node differently
+      const color =
+        this.#appStateManager.get('currentArticle')?.id === d.id &&
+        this.#appStateManager.get('currentArticle')?.dictionary === d.dictionary
+          ? 0x97003d
+          : 0x1b1b1b;
       const borderColor = 0x666666;
 
       node.beginFill(color);
@@ -348,6 +372,16 @@ export class GraphView extends EventTarget {
       node.y = d.y!;
       this.#nodeRoot.addChild(node);
       this.#nodeGraphics.push(node);
+      this.#nodeMap.set(d.id, d.dictionary, node);
+
+      const sidebarArticle = this.#appStateManager.get('sidebarArticle');
+      if (sidebarArticle) {
+        const { id, dictionary } = sidebarArticle;
+        if (d.id === id && d.dictionary === dictionary) {
+          node.tint = 0x666666;
+          this.#selectedNode = node;
+        }
+      }
 
       node.eventMode = 'dynamic';
       node.cursor = 'pointer';
