@@ -1,5 +1,6 @@
 export * from './app-logo.js';
 export * from './loading-icon.js';
+export * from './pop-over.js';
 export * from './search-bar.js';
 export * from './sidebar.js';
 export * from './state-managed-element.js';

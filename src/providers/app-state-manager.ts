@@ -21,6 +21,11 @@ export interface ScopedAppStateManager {
   set<K extends keyof AppState>(key: K, value: AppState[K]): void;
 
   /**
+   * Serializes the current state of the application to a query string.
+   */
+  serialize(): string;
+
+  /**
    * Adds a listener for the given key. The listener is called when the value
    * for the given key changes.
    * @param key The key to listen for changes on.
@@ -146,6 +151,7 @@ export class AppStateManager {
       set: (key, value) => this.set(subscriber, key, value),
       observe: (key, listener) => this.observe(subscriber, key, listener),
       unobserve: (key, listener) => this.unobserve(subscriber, key, listener),
+      serialize: () => this.#state.serialize(),
       on: (event, listener) => this.on(subscriber, event, listener),
       off: (event, listener) => this.off(subscriber, event, listener),
       emit: (event, ...args) => this.emit(subscriber, event, ...args),

@@ -3,6 +3,7 @@ import { StateManagedElement } from './state-managed-element.js';
 import sharedStyles from 'bundle-text:../../static/shared.css';
 import './tooltip-cue.js';
 import { Vector2D } from '../types/index.js';
+import { PopOver } from './pop-over.js';
 
 /**
  * Statusbar which provides controls for the viewport, such as zooming and
@@ -129,6 +130,8 @@ export class Statusbar extends StateManagedElement {
         >
           🔄
         </button>
+        <div class="separator"></div>
+        <button id="share-link" title="Del lenke">🔗</button>
         <div class="fill-width"></div>
         <a
           href="https://github.com/ordbokapi/vis-client"
@@ -173,6 +176,17 @@ export class Statusbar extends StateManagedElement {
       .addEventListener('click', () => {
         this.appStateManager.emit('reload');
       });
+
+    this.#root.querySelector('#share-link')!.addEventListener('click', () => {
+      const url = new URL(window.location.href);
+      const queryString = this.appStateManager.serialize();
+      url.search = queryString;
+      navigator.clipboard.writeText(url.toString());
+      const popOver = new PopOver();
+      popOver.text = 'Lenke kopiert til utklippstavla';
+      popOver.target = this.#root.querySelector('#share-link')! as HTMLElement;
+      popOver.show();
+    });
 
     this.#root
       .querySelector('#zoom-label')!
