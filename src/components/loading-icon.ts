@@ -1,4 +1,4 @@
-import { html } from '../utils/html.js';
+import { html } from '../utils/index.js';
 
 /**
  * Loading icon which is displayed when the app is loading data. Built entirely

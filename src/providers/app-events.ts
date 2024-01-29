@@ -1,4 +1,4 @@
-import { Rect2D } from '../types/rect-2d.js';
+import { Rect2D } from '../types/index.js';
 
 /**
  * App event.

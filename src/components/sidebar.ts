@@ -1,5 +1,5 @@
 import { ApiClient, Article } from '../providers/index.js';
-import { Dictionary } from '../types/dictionary.js';
+import { Dictionary } from '../types/index.js';
 import { html, text } from '../utils/index.js';
 import { StateManagedElement } from './state-managed-element.js';
 import { ModalDialog } from './modal-dialog.js';

@@ -1,4 +1,4 @@
-import { html } from '../utils/html.js';
+import { html } from '../utils/index.js';
 import sharedStyles from 'bundle-text:../../static/shared.css';
 
 /**

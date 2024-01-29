@@ -105,4 +105,11 @@ export class NodeSelection {
       this.add(node);
     }
   }
+
+  /**
+   * Gets the first node in the selection.
+   */
+  first() {
+    return this.#nodes.values().next().value;
+  }
 }

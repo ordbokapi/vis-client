@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import * as pixi from 'pixi.js';
 // @ts-ignore
 import { Viewport } from 'pixi-viewport';
-import { Rect2D, Vector2D } from '../types/index.js';
+import { IndexedSet, Rect2D, Vector2D } from '../types/index.js';
 import { DebugPanel } from './debug-panel.js';
 
 /**
@@ -13,7 +13,7 @@ export class BBoxCollisionForce {
   /**
    * The graphics objects that represent the nodes.
    */
-  #nodeGraphics: pixi.Graphics[];
+  #nodeGraphics: IndexedSet<pixi.Graphics>;
 
   /**
    * The debug canvas used to visualize debug information in the viewport.
@@ -93,7 +93,7 @@ export class BBoxCollisionForce {
    */
   constructor(
     viewport: Viewport,
-    nodeGraphics: pixi.Graphics[],
+    nodeGraphics: IndexedSet<pixi.Graphics>,
     debugViewportCanvas?: pixi.Graphics,
     debugAppCanvas?: pixi.Graphics,
   ) {
@@ -243,7 +243,7 @@ export class BBoxCollisionForce {
     }
 
     for (const [index, d3Node] of this.#nodes!.entries()) {
-      const graphicalNode = this.#nodeGraphics[index];
+      const graphicalNode = this.#nodeGraphics.get(index);
 
       const nodePos = new Vector2D(graphicalNode);
       const bounds = new Rect2D(graphicalNode.getBounds());
@@ -285,7 +285,7 @@ export class BBoxCollisionForce {
         if ('data' in quad && quad.data !== d3Node) {
           const otherNode = quad.data;
           const otherNodeBounds = new Rect2D(
-            this.#nodeGraphics[this.#nodes!.indexOf(otherNode)].getBounds(),
+            this.#nodeGraphics.get(this.#nodes!.indexOf(otherNode)).getBounds(),
           );
 
           // Transform bounds to D3 space

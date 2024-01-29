@@ -1,4 +1,5 @@
 export * from './dictionary.js';
+export * from './indexed-set.js';
 export * from './inflection-tag.js';
 export * from './graphql-error.js';
 export * from './rect-2d.js';

@@ -1,5 +1,5 @@
 import { ApiClient, SearchResults } from '../providers/index.js';
-import { Dictionary } from '../types/dictionary.js';
+import { Dictionary } from '../types/index.js';
 import { html } from '../utils/index.js';
 import { StateManagedElement } from './state-managed-element.js';
 import sharedStyles from 'bundle-text:../../static/shared.css';
