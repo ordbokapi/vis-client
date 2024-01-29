@@ -187,6 +187,20 @@ export class AppStateManager {
   }
 
   /**
+   * Gets the global app state manager.
+   */
+  static get global() {
+    if (!(window as any).appStateManager) {
+      (window as any).appStateManager = new AppStateManager();
+    }
+    return (
+      window as any as {
+        appStateManager: AppStateManager;
+      }
+    ).appStateManager;
+  }
+
+  /**
    * Gets a value from the app state.
    * @param key The key to get the value for.
    */

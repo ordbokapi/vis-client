@@ -12,14 +12,7 @@ export abstract class StateManagedElement extends HTMLElement {
   constructor() {
     super();
 
-    if (!(window as any).appStateManager) {
-      (window as any).appStateManager = new AppStateManager();
-    }
-    this.#appStateManager = (
-      window as any as {
-        appStateManager: AppStateManager;
-      }
-    ).appStateManager.for(this);
+    this.#appStateManager = AppStateManager.global.for(this);
   }
 
   /**
