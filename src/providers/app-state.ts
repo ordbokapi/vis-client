@@ -38,6 +38,14 @@ export class AppState {
   nodePositions?: { [id: string]: Vector2D };
 
   /**
+   * State of keyboard modifiers.
+   */
+  modifiers = {
+    ctrl: false,
+    shift: false,
+  };
+
+  /**
    * Converts an article ID and dictionary to a string.
    */
   static articleToString(

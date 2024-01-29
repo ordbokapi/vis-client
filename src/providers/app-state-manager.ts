@@ -144,6 +144,28 @@ export class AppStateManager {
     window.addEventListener('popstate', () =>
       this.#updateStateFromQueryString(),
     );
+
+    window.addEventListener('keydown', (event) => {
+      switch (event.key) {
+        case 'Shift':
+          this.#state.modifiers.shift = true;
+          break;
+        case 'Control':
+          this.#state.modifiers.ctrl = true;
+          break;
+      }
+    });
+
+    window.addEventListener('keyup', (event) => {
+      switch (event.key) {
+        case 'Shift':
+          this.#state.modifiers.shift = false;
+          break;
+        case 'Control':
+          this.#state.modifiers.ctrl = false;
+          break;
+      }
+    });
   }
 
   /**
