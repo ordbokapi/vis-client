@@ -4,7 +4,7 @@ import { Viewport as PixiViewport } from 'pixi-viewport';
 import { html, text } from '../utils/index.js';
 import { GraphView } from '../rendering/index.js';
 import { ApiClient } from '../providers/index.js';
-import { Dictionary, Vector2D } from '../types/index.js';
+import { Dictionary, Rect2D, Vector2D } from '../types/index.js';
 import { StateManagedElement } from './state-managed-element.js';
 import { ModalDialog } from './modal-dialog.js';
 import './loading-icon.js';
@@ -94,20 +94,114 @@ export class Viewport extends StateManagedElement {
 
     this.viewport.cursor = 'grab';
 
-    const updateCursor = (state: boolean) => {
-      const [off, on] = state ? ['grab', 'grabbing'] : ['grabbing', 'grab'];
-      this.viewport.cursor = on;
+    // Dragging while holding shift should not pan the viewport but instead
+    // select nodes with a selection box.
 
-      if (view.style.cursor === off) {
-        view.style.cursor = on;
+    let shiftDown = false;
+    let mouseDown = false;
+    let selecting = false;
+
+    const updateCursor = () => {
+      const oldCursor = this.viewport.cursor;
+
+      if (selecting || shiftDown) {
+        this.viewport.cursor = 'crosshair';
+      } else {
+        this.viewport.cursor = mouseDown ? 'grabbing' : 'grab';
+      }
+
+      if (view.style.cursor === oldCursor) {
+        view.style.cursor = this.viewport.cursor;
       }
     };
 
-    this.viewport.on('drag-start', () => updateCursor(true));
-    this.viewport.on('drag-end', () => updateCursor(false));
+    this.viewport.on('drag-start', () => {
+      mouseDown = true;
+      updateCursor();
+    });
+    this.viewport.on('drag-end', () => {
+      mouseDown = false;
+      updateCursor();
+    });
 
-    this.viewport.on('mousedown', () => updateCursor(true));
-    this.viewport.on('mouseup', () => updateCursor(false));
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') {
+        shiftDown = true;
+        updateCursor();
+
+        if (selecting) return;
+        this.viewport.plugins.pause('drag');
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') {
+        shiftDown = false;
+        updateCursor();
+
+        if (selecting) return;
+        this.viewport.plugins.resume('drag');
+      }
+    });
+
+    let selectionBox: pixi.Graphics | null = null;
+    let start: pixi.Point | null = null;
+
+    this.viewport.on('mousedown', (e: pixi.FederatedMouseEvent) => {
+      mouseDown = true;
+      updateCursor();
+
+      if (shiftDown) {
+        start = e.global.clone();
+      }
+    });
+    this.viewport.on('mouseup', () => {
+      mouseDown = false;
+      updateCursor();
+
+      if (selectionBox) {
+        // Selection complete
+
+        this.appStateManager.emit(
+          'selection',
+          new Rect2D(selectionBox.getBounds()),
+        );
+
+        selectionBox.destroy();
+        selectionBox = null;
+        start = null;
+        selecting = false;
+
+        if (!shiftDown) {
+          this.viewport.plugins.resume('drag');
+          updateCursor();
+        }
+      } else if (shiftDown) {
+        // Null selection
+
+        this.appStateManager.emit('selection', new Rect2D(0, 0, 0, 0));
+      }
+    });
+
+    this.viewport.on('mousemove', (e: pixi.FederatedMouseEvent) => {
+      if (!selecting && (!shiftDown || !mouseDown)) return;
+
+      selecting = true;
+
+      if (!selectionBox) {
+        selectionBox = new pixi.Graphics();
+        this.app.stage.addChild(selectionBox);
+      }
+
+      selectionBox.clear();
+      selectionBox.lineStyle(1, 0xffffff, 1);
+      selectionBox.beginFill(0xffffff, 0.1);
+      selectionBox.drawRect(
+        Math.min(start!.x, e.global.x),
+        Math.min(start!.y, e.global.y),
+        Math.abs(e.global.x - start!.x),
+        Math.abs(e.global.y - start!.y),
+      );
+    });
 
     this.app.stage.addChild(this.viewport);
 

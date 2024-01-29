@@ -13,6 +13,7 @@ import { Dictionary, Vector2D, Rect2D } from '../types/index.js';
 import { BBoxCollisionForce } from './bbox-collision-force.js';
 import { DebugPanel } from './debug-panel.js';
 import { TwoKeyMap } from '../types/index.js';
+import { NodeSelection } from './node-selection.js';
 
 /**
  * Full-viewport graph view, built using D3 and a canvas. Nodes can be interacted with,
@@ -199,6 +200,21 @@ export class GraphView extends EventTarget {
 
       this.#selectNode(node, article.id, article.dictionary);
     });
+
+    this.#appStateManager.on('selection', (rect) => {
+      // Rect is in global coordinates, so we need to convert it to local
+      // coordinates
+      this.#selectedNodes.clear();
+      this.#selectedNode = null;
+
+      this.#nodeGraphics.forEach((node) => {
+        const nodeRect = new Rect2D(node.getBounds());
+
+        if (rect.intersectsRect(nodeRect)) {
+          this.#selectedNodes.add(node);
+        }
+      });
+    });
   }
 
   setGraph(graph: ArticleGraph | undefined) {
@@ -267,6 +283,7 @@ export class GraphView extends EventTarget {
   }
 
   #selectedNode: pixi.Graphics | null = null;
+  #selectedNodes = new NodeSelection();
 
   #renderIsEmptyOverlay() {
     this.#overlayCanvas.clear();
@@ -303,10 +320,9 @@ export class GraphView extends EventTarget {
   #selectNode(node: pixi.Graphics, id: number, dictionary: Dictionary) {
     if (this.#selectedNode) {
       // Reset style of previously selected node
-      this.#selectedNode.tint = 0xffffff;
-
       if (this.#selectedNode === node) {
         this.#selectedNode = null;
+        this.#selectedNodes.clear();
         this.#appStateManager.set('sidebarArticle', null);
         return;
       }
@@ -315,8 +331,8 @@ export class GraphView extends EventTarget {
     this.#appStateManager.set('sidebarArticle', { id, dictionary });
 
     // Update style of newly selected node
-    node.tint = 0x666666;
     this.#selectedNode = node;
+    this.#selectedNodes.select(node);
   }
 
   #createNodeGraphics() {
@@ -400,7 +416,9 @@ export class GraphView extends EventTarget {
 
       node.on('mouseout', () => {
         if (!isDragging) {
-          node.tint = this.#selectedNode !== node ? 0xffffff : 0x666666;
+          node.tint = this.#selectedNodes.has(node)
+            ? this.#selectedNodes.tint
+            : 0xffffff;
         }
       });
 
@@ -421,12 +439,31 @@ export class GraphView extends EventTarget {
 
       this.#viewport.on('pointermove', (event: pixi.FederatedMouseEvent) => {
         if (isDragging) {
+          const d3Pos = new Vector2D(d.x!, d.y!);
           data = new Vector2D(event.getLocalPosition(node.parent));
           const newPosition = data.subtract(anchorOffset);
           d.fx = newPosition.x;
           d.fy = newPosition.y;
           d.x = newPosition.x;
           d.y = newPosition.y;
+
+          if (this.#selectedNodes.has(node)) {
+            for (const graphics of this.#selectedNodes) {
+              if (graphics === node) continue;
+
+              const d3Node =
+                this.#simulation.nodes()[this.#nodeGraphics.indexOf(graphics)];
+
+              const otherNodePosition = new Vector2D(d3Node.x!, d3Node.y!);
+              const offset = otherNodePosition.subtract(d3Pos);
+              const otherNodeNewPosition = newPosition.add(offset);
+
+              d3Node.fx = otherNodeNewPosition.x;
+              d3Node.fy = otherNodeNewPosition.y;
+              d3Node.x = otherNodeNewPosition.x;
+              d3Node.y = otherNodeNewPosition.y;
+            }
+          }
         }
       });
 
@@ -436,10 +473,23 @@ export class GraphView extends EventTarget {
           this.#viewport.plugins.resume('drag');
 
           isDragging = false;
-          node.tint = this.#selectedNode !== node ? 0xffffff : 0x666666;
+          node.tint =
+            this.#selectedNode !== node ? 0xffffff : this.#selectedNodes.tint;
           text.tint = 0xffffff;
           d.fx = null;
           d.fy = null;
+
+          if (this.#selectedNodes.has(node)) {
+            for (const graphics of this.#selectedNodes) {
+              if (graphics === node) continue;
+
+              const d3Node =
+                this.#simulation.nodes()[this.#nodeGraphics.indexOf(graphics)];
+
+              d3Node.fx = null;
+              d3Node.fy = null;
+            }
+          }
 
           const distance = initialPosition.distance(data);
 
