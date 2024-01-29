@@ -3848,6 +3848,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"punycode@npm:^2.0.0":
+  version: 2.3.1
+  resolution: "punycode@npm:2.3.1"
+  checksum: 14f76a8206bc3464f794fb2e3d3cc665ae416c01893ad7a02b23766eb07159144ee612ad67af5e84fa4479ccfe67678c4feb126b0485651b302babf66f04f9e9
+  languageName: node
+  linkType: hard
+
 "qs@npm:^6.11.2":
   version: 6.11.2
   resolution: "qs@npm:6.11.2"
@@ -4248,7 +4255,7 @@ __metadata:
     pixi-viewport: "npm:^5.0.2"
     pixi.js: "npm:^7.3.3"
     prettier: "npm:^3.2.4"
-    punycode: "npm:^1.4.1"
+    punycode: "npm:^2.0.0"
     typescript: "npm:^5.3.3"
     url: "npm:^0.11.0"
   languageName: unknown
