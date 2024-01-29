@@ -13,16 +13,10 @@ export class IndexedSet<T> {
   #indices: Map<T, number>;
 
   /**
-   * The set of elements.
-   */
-  #set;
-
-  /**
    * Initializes a new instance of the IndexedSet class.
    * @param elements The initial elements.
    */
   constructor(elements?: Iterable<T>) {
-    this.#set = new Set();
     this.#elements = [];
     this.#indices = new Map();
 
@@ -44,7 +38,7 @@ export class IndexedSet<T> {
    * Gets the number of elements in the set.
    */
   get size(): number {
-    return this.#set.size;
+    return this.#indices.size;
   }
 
   /**
@@ -52,25 +46,24 @@ export class IndexedSet<T> {
    * @param element The element to add.
    */
   add(element: T): this {
-    const size = this.size;
-    this.#set.add(element);
-
-    if (this.size > size) {
-      this.#elements.push(element);
-      this.#indices.set(element, this.#elements.length - 1);
+    if (this.#indices.has(element)) {
+      return this;
     }
+
+    this.#elements.push(element);
+    this.#indices.set(element, this.#elements.length - 1);
     return this;
   }
 
   /**
    * Deletes an element from the set.
    * @param element The element to delete.
+   * @returns `true` if the element was deleted; otherwise, `false`.
    */
   delete(element: T): boolean {
-    const size = this.size;
-    const result = this.#set.delete(element);
+    const result = this.#indices.delete(element);
 
-    if (this.size < size) {
+    if (result) {
       const index = this.#indices.get(element)!;
       this.#elements.splice(index, 1);
       this.#indices.delete(element);
@@ -88,7 +81,7 @@ export class IndexedSet<T> {
    * Clears the set.
    */
   clear(): void {
-    this.#set.clear();
+    this.#indices.clear();
     this.#elements = [];
   }
 
@@ -105,7 +98,7 @@ export class IndexedSet<T> {
    * @param element The element.
    */
   has(element: T): boolean {
-    return this.#set.has(element);
+    return this.#indices.has(element);
   }
 
   /**
