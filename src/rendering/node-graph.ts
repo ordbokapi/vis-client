@@ -15,6 +15,7 @@ import {
   GraphForceBehaviour,
   GraphSelectionBehaviour,
   GraphNodeTintBehaviour,
+  GraphNodeBBoxBehaviour,
 } from './graph-behaviours/index.js';
 
 /**
@@ -27,9 +28,14 @@ export class NodeGraph {
   #nodes = new IndexedSet<pixi.Graphics>();
 
   /**
-   * The node map, keyed by node ID and dictionary.
+   * The node map, keyed by node ID.
    */
-  #nodeMap = new TwoKeyMap<number, string, pixi.Graphics>();
+  #nodeMap = new Map<number, d3.SimulationNodeDatum & Article>();
+
+  /**
+   * The node graphics map, keyed by node ID and dictionary.
+   */
+  #graphicsMap = new TwoKeyMap<number, string, pixi.Graphics>();
 
   /**
    * The edge canvas.
@@ -45,6 +51,14 @@ export class NodeGraph {
    * The d3 links from which the graph is generated.
    */
   #d3Links: d3.SimulationLinkDatum<d3.SimulationNodeDatum & Article>[] = [];
+
+  /**
+   * Links, keyed by node.
+   */
+  #nodeLinks = new Map<
+    d3.SimulationNodeDatum & Article,
+    d3.SimulationLinkDatum<d3.SimulationNodeDatum & Article>[]
+  >();
 
   /**
    * The d3 force simulation.
@@ -80,6 +94,16 @@ export class NodeGraph {
   #nodeBehaviourManager: GraphBehaviourManager;
 
   /**
+   * The node graphics container.
+   */
+  #nodeGraphicsContainer = new pixi.Container();
+
+  /**
+   * Whether or not this is the first time the graph has been rendered.
+   */
+  #firstRender = true;
+
+  /**
    * Initializes a new instance of the NodeGraph class.
    * @param viewport The viewport.
    */
@@ -102,19 +126,23 @@ export class NodeGraph {
       application: this.#application,
       simulation: this.#simulation,
       selection: this.#selection,
-      nodeMap: this.#nodeMap,
+      graphicsMap: this.#graphicsMap,
       allGraphics: this.#nodes,
       nodes: this.#d3Nodes,
+      links: this.#d3Links,
+      nodeLinks: this.#nodeLinks,
     });
 
+    this.#viewport.addChild(this.#edgeCanvas);
+    this.#viewport.addChild(this.#nodeGraphicsContainer);
+
     this.#nodeBehaviourManager
+      .register(GraphNodeBBoxBehaviour)
       .register(GraphDragBehaviour)
       .register(GraphSelectionBehaviour)
       .register(GraphNodeTintBehaviour)
       .register(GraphForceBehaviour)
       .register(GraphDebugBehaviour);
-
-    this.#viewport.addChild(this.#edgeCanvas);
 
     this.#viewport.on('zoomed', () => {
       const textResolution = this.#viewport.scale.x;
@@ -163,10 +191,75 @@ export class NodeGraph {
     nodes: (d3.SimulationNodeDatum & Article)[],
     links: d3.SimulationLinkDatum<d3.SimulationNodeDatum & Article>[],
   ) {
-    this.#d3Nodes = nodes;
-    this.#d3Links = links;
+    this.#d3Nodes.splice(0, this.#d3Nodes.length, ...nodes);
+    this.#nodeMap.clear();
+    for (const node of nodes) {
+      this.#nodeMap.set(node.id, node);
+    }
+    this.#d3Links.splice(0, this.#d3Links.length, ...links);
+    this.#nodeLinks.clear();
+    for (const node of nodes) {
+      this.#nodeLinks.set(node, []);
+    }
+    for (const { source, target } of links) {
+      const sourceNode =
+        typeof source === 'object'
+          ? source
+          : this.#nodeMap.get(source as number);
+      const targetNode =
+        typeof target === 'object'
+          ? target
+          : this.#nodeMap.get(target as number);
+
+      if (!sourceNode || !targetNode) {
+        continue;
+      }
+
+      this.#nodeLinks
+        .get(sourceNode)
+        ?.push({ source: sourceNode, target: targetNode });
+    }
     this.#createNodeGraphics();
     this.render();
+
+    if (this.#firstRender) {
+      this.#firstRender = false;
+
+      if (this.#setNodePositions()) {
+        this.#appStateManager.emit('start-sim');
+        this.#simulation.stop();
+
+        return;
+      }
+    }
+
+    this.#simulation.alpha(4).restart().tick(200).alpha(1);
+  }
+
+  /**
+   * Sets node positions from state. Returns true if all nodes had positions
+   * set, false otherwise.
+   */
+  #setNodePositions() {
+    const nodePositions = this.#appStateManager.get('nodePositions');
+
+    if (!nodePositions) {
+      return false;
+    }
+
+    let missed = false;
+
+    for (const node of this.#simulation.nodes()) {
+      const position = nodePositions[node.id];
+      if (position) {
+        node.x = position.x;
+        node.y = position.y;
+      } else {
+        missed = true;
+      }
+    }
+
+    return !missed;
   }
 
   /**
@@ -226,9 +319,9 @@ export class NodeGraph {
 
       node.x = d3Node.x!;
       node.y = d3Node.y!;
-      this.#viewport.addChild(node);
+      this.#nodeGraphicsContainer.addChild(node);
       this.#nodes.add(node);
-      this.#nodeMap.set(d3Node.id, d3Node.dictionary, node);
+      this.#graphicsMap.set(d3Node.id, d3Node.dictionary, node);
 
       node.eventMode = 'dynamic';
       node.cursor = 'pointer';
@@ -239,6 +332,8 @@ export class NodeGraph {
         index: this.#nodes.indexOf(node),
       });
     });
+
+    this.#nodeBehaviourManager.allNodeGraphicsCreated({});
   }
 
   /**

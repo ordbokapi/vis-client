@@ -1878,6 +1878,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/rbush@npm:^3":
+  version: 3.0.3
+  resolution: "@types/rbush@npm:3.0.3"
+  checksum: a0c2425eb9cb43f442ef48d9d0221c006e0f7303c35f97d443c9832e7c824572b7206a68f9ffe486ba0789cc19600732c3412729211f0c1a5058e7b3f0fd937d
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^2.0.0":
   version: 2.0.0
   resolution: "abbrev@npm:2.0.0"
@@ -3856,6 +3863,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"quickselect@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "quickselect@npm:2.0.0"
+  checksum: 6c8d591bc73beae4c1996b7b7138233a7dbbbdde29b7b6d822a02d08cd220fd27613f47d6e9635989b12e250d42ef9da3448de1ed12ad962974e207ab3c3562c
+  languageName: node
+  linkType: hard
+
+"rbush@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "rbush@npm:3.0.1"
+  dependencies:
+    quickselect: "npm:^2.0.0"
+  checksum: 55311586c30cdedaa2220de6f1da45fe1fa806263afbf7b6f4c0078983830c2abc7771187896d68bfc9078cb279079fb4c84971831da4b74384aab2c2c417758
+  languageName: node
+  linkType: hard
+
 "react-error-overlay@npm:6.0.9":
   version: 6.0.9
   resolution: "react-error-overlay@npm:6.0.9"
@@ -4241,6 +4264,7 @@ __metadata:
     "@pixi/core": "npm:^7.3.3"
     "@pixi/display": "npm:^7.3.3"
     "@types/d3": "npm:^7.4.3"
+    "@types/rbush": "npm:^3"
     buffer: "npm:^5.5.0||^6.0.0"
     d3: "npm:^7.8.5"
     parcel: "npm:^2.11.0"
@@ -4248,6 +4272,7 @@ __metadata:
     pixi.js: "npm:^7.3.3"
     prettier: "npm:^3.2.4"
     punycode: "npm:^2.0.0"
+    rbush: "npm:^3.0.1"
     typescript: "npm:^5.3.3"
     url: "npm:^0.11.0"
   languageName: unknown

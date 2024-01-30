@@ -123,32 +123,6 @@ export class GraphView extends EventTarget {
       .links();
     this.#nodeGraph.setData(graph.nodes, links ?? []);
 
-    if (this.#firstRender) {
-      this.#firstRender = false;
-      const nodePositions = this.#appStateManager.get('nodePositions');
-      if (nodePositions) {
-        let missed = false;
-        this.#simulation.nodes().forEach((node) => {
-          const position = nodePositions[node.id];
-          if (position) {
-            node.x = position.x;
-            node.y = position.y;
-          } else {
-            missed = true;
-          }
-        });
-
-        if (!missed) {
-          this.#renderIsEmptyOverlay();
-          this.#appStateManager.emit('start-sim');
-          this.#simulation.stop();
-
-          return;
-        }
-      }
-    }
-
-    this.#simulation.alpha(2).restart().tick(200).alpha(1);
     this.#renderIsEmptyOverlay();
   }
 

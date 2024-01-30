@@ -28,7 +28,7 @@ export class GraphSelectionBehaviour implements IGraphBehaviour {
 
   constructor({
     appStateManager,
-    nodeMap,
+    graphicsMap: nodeMap,
     selection,
     allGraphics,
     viewport,
@@ -97,6 +97,14 @@ export class GraphSelectionBehaviour implements IGraphBehaviour {
 
     viewport.on('pointerupoutside', () => {
       this.#isMouseDown = false;
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      selection.clear();
     });
   }
 

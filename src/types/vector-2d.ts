@@ -161,6 +161,14 @@ export class Vector2D {
   }
 
   /**
+   * Get the direction from this vector to another vector.
+   * @param v Vector to get the direction to.
+   */
+  direction(v: Vector2D): Vector2D {
+    return v.subtract(this).unit;
+  }
+
+  /**
    * Floors the x and y coordinates of this vector.
    */
   floor(): Vector2D {

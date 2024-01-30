@@ -129,4 +129,16 @@ export class IndexedSet<T> {
   *values(): IterableIterator<T> {
     yield* this.#elements.values();
   }
+
+  /**
+   * Maps the elements in the set.
+   * @param callbackfn The mapping function.
+   * @param thisArg The `this` argument for the mapping function.
+   */
+  map<U>(
+    callbackfn: (value: T, index: number, array: T[]) => U,
+    thisArg?: any,
+  ): U[] {
+    return this.#elements.map(callbackfn, thisArg);
+  }
 }

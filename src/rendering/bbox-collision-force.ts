@@ -4,6 +4,7 @@ import * as pixi from 'pixi.js';
 import { Viewport } from 'pixi-viewport';
 import { IndexedSet, Rect2D, Vector2D } from '../types/index.js';
 import { DebugPanel } from './debug-panel.js';
+import { INodeBBoxBehaviourState } from './graph-behaviours/graph-node-bbox-behaviour.js';
 
 /**
  * A force that prevents nodes from overlapping by applying a collision force
@@ -38,19 +39,9 @@ export class BBoxCollisionForce {
   #viewport: Viewport;
 
   /**
-   * The quadtree used to detect collisions.
-   */
-  #quadtree?: d3.Quadtree<any>;
-
-  /**
    * The nodes that are currently being simulated.
    */
   #nodes?: any[];
-
-  /**
-   * Tracks how many ticks have passed since the last quadtree was created.
-   */
-  #ticksSinceNewTree = 0;
 
   /**
    * Tracks how many ticks have passed since the nodes were last updated.
@@ -83,6 +74,11 @@ export class BBoxCollisionForce {
   #onStartListeners: (() => void)[] = [];
 
   /**
+   * The bounding box state.
+   */
+  #boundingBoxes: INodeBBoxBehaviourState;
+
+  /**
    * Initializes the force.
    * @param viewport The viewport used to render the graph.
    * @param nodeGraphics The graphics objects that represent the nodes.
@@ -94,6 +90,7 @@ export class BBoxCollisionForce {
   constructor(
     viewport: Viewport,
     nodeGraphics: IndexedSet<pixi.Graphics>,
+    boundingBoxes: INodeBBoxBehaviourState,
     debugViewportCanvas?: pixi.Graphics,
     debugAppCanvas?: pixi.Graphics,
   ) {
@@ -101,11 +98,14 @@ export class BBoxCollisionForce {
     this.#nodeGraphics = nodeGraphics;
     this.#debugViewportCanvas = debugViewportCanvas;
     this.#debugAppCanvas = debugAppCanvas;
+    this.#boundingBoxes = boundingBoxes;
 
     if (debugAppCanvas) {
       this.#debugPanel = new DebugPanel(debugAppCanvas);
     }
   }
+
+  #rStarTreeSearchBoundsOffset = new Vector2D(20, 20);
 
   getD3Force(): d3.Force<any, any> {
     const force = (alpha: number) => {
@@ -124,18 +124,6 @@ export class BBoxCollisionForce {
   initialize(nodes: any[]) {
     this.#nodes = nodes;
     this.#ticksSinceNewNodes = 0;
-    this.#createQuadtree();
-  }
-
-  /**
-   * Creates the quadtree used to detect collisions.
-   */
-  #createQuadtree() {
-    this.#quadtree = d3.quadtree(
-      this.#nodes!,
-      (d) => d.x!,
-      (d) => d.y!,
-    );
   }
 
   /**
@@ -179,7 +167,7 @@ export class BBoxCollisionForce {
   }
 
   /**
-   * Applies the force.
+   * Applies the force. Runs on every tick.
    * @param alpha The current alpha value.
    */
   applyForce(alpha: number) {
@@ -196,17 +184,14 @@ export class BBoxCollisionForce {
         `Simulation alpha target: ${this.#alphaTarget.toFixed(2)}`,
       );
       this.#debugPanel.setText(2, `Nodes: ${this.#nodes!.length}`);
-      this.#debugPanel.setText(
-        3,
-        `Ticks since new quadtree: ${this.#ticksSinceNewTree}`,
-      );
     }
-    if (!this.#quadtree || !this.#nodes || !this.#nodeGraphics) return;
+    if (!this.#nodes || !this.#nodeGraphics) return;
 
     if (this.#ticksSinceNewNodes < this.#ticksToWait) {
       this.#ticksSinceNewNodes++;
       return;
     } else if (this.#ticksSinceNewNodes === this.#ticksToWait) {
+      // Don't block force application to notify listeners
       window.requestAnimationFrame(() => {
         for (const listener of this.#onStartListeners) {
           try {
@@ -220,8 +205,6 @@ export class BBoxCollisionForce {
       this.#ticksSinceNewNodes++;
     }
 
-    const scale = new Vector2D(this.#viewport.scale);
-
     // alpha is a value between 0 and 1, where 1 is the start of the
     // simulation and 0 is the end of the simulation. We use this to
     // increase the force of the collision as the simulation progresses, to
@@ -234,24 +217,9 @@ export class BBoxCollisionForce {
     // the final alpha target.
     const alphaFactor = Math.pow(alpha - 1 - this.#alphaTarget, 4);
 
-    // Rebuild the quadtree every 100 ticks
-    if (this.#ticksSinceNewTree > 100) {
-      this.#createQuadtree();
-      this.#ticksSinceNewTree = 0;
-    } else {
-      this.#ticksSinceNewTree++;
-    }
-
     for (const [index, d3Node] of this.#nodes!.entries()) {
       const graphicalNode = this.#nodeGraphics.get(index);
-
-      const nodePos = new Vector2D(graphicalNode);
-      const bounds = new Rect2D(graphicalNode.getBounds());
-
-      // Transform bounds to D3 space
-      bounds.size = bounds.size.divide(scale);
-      bounds.position = nodePos.subtract(bounds.size.divide(2));
-
+      const bounds = this.#boundingBoxes.cache.get(graphicalNode);
       const boundsCenter = bounds.center;
 
       if (this.#debugViewportCanvas) {
@@ -279,116 +247,106 @@ export class BBoxCollisionForce {
         );
       }
 
-      this.#quadtree.visit((quad) => {
-        if (!quad) return;
+      const searchBounds = bounds.resizeCentered(
+        this.#rStarTreeSearchBoundsOffset,
+      );
 
-        if ('data' in quad && quad.data !== d3Node) {
-          const otherNode = quad.data;
-          const otherNodeBounds = new Rect2D(
-            this.#nodeGraphics.get(this.#nodes!.indexOf(otherNode)).getBounds(),
-          );
-
-          // Transform bounds to D3 space
-          otherNodeBounds.size = otherNodeBounds.size.divide(scale);
-          otherNodeBounds.position = new Vector2D(
-            otherNode.x!,
-            otherNode.y!,
-          ).subtract(otherNodeBounds.size.divide(2));
-
-          // expand bounds slightly to give nodes some breathing room
-          const margin = 20;
-
-          otherNodeBounds.position.x -= margin / 2;
-          otherNodeBounds.position.y -= margin / 2;
-          otherNodeBounds.size.x += margin;
-          otherNodeBounds.size.y += margin;
-
-          if (this.#debugViewportCanvas) {
-            this.#debugViewportCanvas.lineStyle(1, 0x0000ff);
-            this.#debugViewportCanvas.drawRect(
-              otherNodeBounds.x,
-              otherNodeBounds.y,
-              otherNodeBounds.width,
-              otherNodeBounds.height,
-            );
-          }
-
-          // Calculate overlap and apply force to separate nodes
-
-          const intersection = bounds.intersection(otherNodeBounds);
-
-          if (!intersection || !intersection.size) {
-            return;
-          }
-
-          if (this.#debugViewportCanvas) {
-            this.#debugViewportCanvas.lineStyle(1, 0xff00ff);
-            this.#debugViewportCanvas.drawRect(
-              intersection.x,
-              intersection.y,
-              intersection.width,
-              intersection.height,
-            );
-          }
-
-          const intersectionCenter = intersection.center;
-
-          // Compute a vector that points from the center of the intersection
-          // outwards, and apply a force to the node in that direction.
-          const direction = intersectionCenter.subtract(boundsCenter);
-          const distance = Math.max(direction.magnitude, 1);
-
-          if (!direction.magnitude) {
-            return;
-          }
-
-          const normalizedDirection = direction.normalize();
-
-          // The force's magnitude could be proportional to the size of the
-          // intersection and inversely proportional to the distance between
-          // centers (to avoid extreme forces at very close distances)
-          const intersectionArea = Math.min(intersection.area, 5);
-          const forceMagnitude = Math.min(
-            (intersectionArea / distance) * alphaFactor,
-            1,
-          );
-
-          const force = normalizedDirection.multiply(
-            forceMagnitude * this.#strength * -1,
-          );
-
-          // For very small forces, apply friction to prevent nodes from
-          // drifting far away from each other
-          if (force.magnitude < 0.01) {
-            const frictionDeceleration = 0.02;
-
-            d3Node.vx! *= frictionDeceleration;
-            d3Node.vy! *= frictionDeceleration;
-            return;
-          }
-
-          // Now 'force' is a Vector2D with direction away from the intersection
-          // and magnitude based on the intersection size and distance
-
-          if (this.#debugPanel && force.magnitude > this.#maxForce.magnitude) {
-            this.#maxForce = force;
-            this.#debugPanel?.setText(
-              4,
-              `Max force: ${this.#maxForce.toString(2)}, ${this.#maxForce.magnitude.toFixed(2)}`,
-            );
-          }
-
-          d3Node.vx! += force.x;
-          d3Node.vy! += force.y;
-
-          // Apply an equal force to the other node in the opposite direction
-          otherNode.vx! -= force.x;
-          otherNode.vy! -= force.y;
+      for (const leaf of this.#boundingBoxes.nodesIn(searchBounds)) {
+        if (leaf.d3Node === d3Node) {
+          continue;
         }
 
-        // Return false to only check nodes in the current quad
-        return false;
-      });
+        const otherNode = leaf.d3Node;
+        const otherNodeBounds = this.#boundingBoxes.cache
+          .get(this.#nodeGraphics.get(this.#nodes!.indexOf(otherNode)))
+          .resizeCentered(20); // add some margin around the node
+
+        if (this.#debugViewportCanvas) {
+          this.#debugViewportCanvas.lineStyle(1, 0x0000ff);
+          this.#debugViewportCanvas.drawRect(
+            otherNodeBounds.x,
+            otherNodeBounds.y,
+            otherNodeBounds.width,
+            otherNodeBounds.height,
+          );
+        }
+
+        // Calculate overlap and apply force to separate nodes
+
+        const intersection = bounds.intersection(otherNodeBounds);
+
+        if (!intersection?.size) {
+          continue;
+        }
+
+        // console.log(
+        //   `Collision between ${d3Node.lemmas[0].lemma} and ${otherNode.lemmas[0].lemma}`,
+        // );
+
+        if (this.#debugViewportCanvas) {
+          this.#debugViewportCanvas.lineStyle(1, 0xff00ff);
+          this.#debugViewportCanvas.drawRect(
+            intersection.x,
+            intersection.y,
+            intersection.width,
+            intersection.height,
+          );
+        }
+
+        const intersectionCenter = intersection.center;
+
+        // Compute a vector that points from the center of the intersection
+        // outwards, and apply a force to the node in that direction.
+        const direction = intersectionCenter.subtract(boundsCenter);
+        const distance = Math.max(direction.magnitude, 1);
+
+        if (!direction.magnitude) {
+          continue;
+        }
+
+        const normalizedDirection = direction.normalize();
+
+        // The force's magnitude could be proportional to the size of the
+        // intersection and inversely proportional to the distance between
+        // centers (to avoid extreme forces at very close distances)
+        const intersectionArea = Math.min(intersection.area, 5);
+        const forceMagnitude = Math.min(
+          (intersectionArea / distance) * alphaFactor,
+          1,
+        );
+
+        const force = normalizedDirection.multiply(
+          forceMagnitude * this.#strength * -1,
+        );
+
+        // For very small forces, apply friction to prevent nodes from
+        // drifting far away from each other
+        if (force.magnitude < 0.01) {
+          const frictionDeceleration = 0.02;
+
+          d3Node.vx! *= frictionDeceleration;
+          d3Node.vy! *= frictionDeceleration;
+          continue;
+        }
+
+        // Now 'force' is a Vector2D with direction away from the intersection
+        // and magnitude based on the intersection size and distance
+
+        if (this.#debugPanel && force.magnitude > this.#maxForce.magnitude) {
+          this.#maxForce = force;
+          this.#debugPanel?.setText(
+            4,
+            `Max force: ${this.#maxForce.toString(2)}, ${this.#maxForce.magnitude.toFixed(2)}`,
+          );
+        }
+
+        d3Node.vx! += force.x;
+        d3Node.vy! += force.y;
+
+        // Apply an equal force to the other node in the opposite direction
+        otherNode.vx! -= force.x;
+        otherNode.vy! -= force.y;
+      }
     }
   }
 }

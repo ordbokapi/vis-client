@@ -2,10 +2,11 @@ import * as pixi from 'pixi.js';
 import * as d3 from 'd3';
 import {
   IGraphBehaviour,
-  IGraphBehaviourOnlyInitializationOptions,
+  IGraphBehaviourInitializationOptions,
 } from './graph-behaviour.js';
 import { Article } from '../../providers/index.js';
 import { BBoxCollisionForce } from '../bbox-collision-force.js';
+import { GraphNodeBBoxBehaviour } from './graph-node-bbox-behaviour.js';
 
 /**
  * Node force behaviour.
@@ -20,11 +21,14 @@ export class GraphForceBehaviour implements IGraphBehaviour {
     appStateManager,
     simulation,
     allGraphics,
-  }: IGraphBehaviourOnlyInitializationOptions) {
+    getState,
+  }: IGraphBehaviourInitializationOptions) {
     if (appStateManager.get('debug')) {
       this.#debugAppCanvas = application.stage.addChild(new pixi.Graphics());
       this.#debugViewportCanvas = viewport.addChild(new pixi.Graphics());
     }
+
+    const boundingBoxes = getState(GraphNodeBBoxBehaviour);
 
     simulation
       .force(
@@ -44,6 +48,7 @@ export class GraphForceBehaviour implements IGraphBehaviour {
         new BBoxCollisionForce(
           viewport,
           allGraphics,
+          boundingBoxes,
           this.#debugViewportCanvas,
           this.#debugAppCanvas,
         )

@@ -8,13 +8,15 @@
     "@pixi/display": "^7.3.3",
     "d3": "^7.8.5",
     "pixi-viewport": "^5.0.2",
-    "pixi.js": "^7.3.3"
+    "pixi.js": "^7.3.3",
+    "rbush": "^3.0.1"
   },
   "devDependencies": {
     "@parcel/packager-raw-url": "2.11.0",
     "@parcel/transformer-inline-string": "2.11.0",
     "@parcel/transformer-webmanifest": "2.11.0",
     "@types/d3": "^7.4.3",
+    "@types/rbush": "^3",
     "buffer": "^5.5.0||^6.0.0",
     "parcel": "^2.11.0",
     "prettier": "^3.2.4",

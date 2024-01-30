@@ -322,4 +322,52 @@ export class Rect2D {
       this.height === rect.size.y
     );
   }
+
+  /**
+   * Resize this rectangle by an offset vector, such that the center of the
+   * rectangle remains the same.
+   * @param offset The offset vector to resize by.
+   *
+   * @example
+   * ```ts
+   * const rect = new Rect2D(-10, -10, 10, 10);
+   * // rect.center === { x: 0, y: 0 }
+   *
+   * const newRect = rect.resize(new Vector2D(10, 10));
+   * // newRect === new Rect2D(-15, -15, 20, 20);
+   * // newRect.center === { x: 0, y: 0 }
+   * ```
+   */
+  resizeCentered(offset: Vector2D): Rect2D;
+  /**
+   * Resize this rectangle by an offset, such that the center of the rectangle
+   * remains the same.
+   * @param offset The offset vector to resize by.
+   *
+   * @example
+   * ```ts
+   * const rect = new Rect2D(-10, -10, 10, 10);
+   * // rect.center === { x: 0, y: 0 }
+   *
+   * const newRect = rect.resize(10);
+   * // newRect === new Rect2D(-15, -15, 20, 20);
+   * // newRect.center === { x: 0, y: 0 }
+   * ```
+   */
+  resizeCentered(offset: number): Rect2D;
+  resizeCentered(offset: Vector2D | number): Rect2D {
+    return typeof offset === 'number'
+      ? new Rect2D(
+          this.position.x - offset / 2,
+          this.position.y - offset / 2,
+          this.size.x + offset,
+          this.size.y + offset,
+        )
+      : new Rect2D(
+          this.position.x - offset.x / 2,
+          this.position.y - offset.y / 2,
+          this.size.x + offset.x,
+          this.size.y + offset.y,
+        );
+  }
 }

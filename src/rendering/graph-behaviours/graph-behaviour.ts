@@ -6,6 +6,31 @@ import { IndexedSet, TwoKeyMap } from '../../types/index.js';
 import { Article, ScopedAppStateManager } from '../../providers/index.js';
 import { NodeSelection } from '../node-selection.js';
 
+type MethodInner<T, K extends keyof T> = K extends any
+  ? T[K] extends Function
+    ? K
+    : never
+  : never;
+type NonConstructorRequired<T> = Required<Omit<T, 'constructor'>>;
+
+/**
+ * Narrows to only keys of type `T` that are optional callable methods and are
+ * not the constructor.
+ */
+type MethodKeys<T> = MethodInner<
+  NonConstructorRequired<T>,
+  keyof NonConstructorRequired<T>
+>;
+
+/**
+ * Type of option parameters for a method with the given key.
+ */
+type MethodOptions<T, K extends MethodKeys<T>> = Parameters<
+  NonConstructorRequired<T>[K] extends (...args: any) => any
+    ? NonConstructorRequired<T>[K]
+    : never
+>[0];
+
 /**
  * Interface for graph behaviour options.
  */
@@ -21,6 +46,15 @@ export interface IGraphBehaviourOptions {
 
   /** All d3 node data. */
   nodes: (d3.SimulationNodeDatum & Article)[];
+
+  /** All d3 link data. */
+  links: d3.SimulationLinkDatum<d3.SimulationNodeDatum & Article>[];
+
+  /** Links keyed by node. */
+  nodeLinks: Map<
+    d3.SimulationNodeDatum & Article,
+    d3.SimulationLinkDatum<d3.SimulationNodeDatum & Article>[]
+  >;
 
   /** The index of the node out of all nodes. */
   index: number;
@@ -44,7 +78,7 @@ export interface IGraphBehaviourOptions {
   selection: NodeSelection;
 
   /** The node graphics map, keyed by node ID and dictionary. */
-  nodeMap: TwoKeyMap<number, string, pixi.Graphics>;
+  graphicsMap: TwoKeyMap<number, string, pixi.Graphics>;
 
   /** Gets the state data for the graph behaviour. */
   getState<S>(behaviour: GraphBehaviourConstructor<S>): S;
@@ -57,10 +91,7 @@ export interface IGraphBehaviourOptions {
  * @param options The graph behaviour options.
  */
 export type GraphBehaviourConstructor<T = never> = new (
-  options: Pick<
-    IGraphBehaviourOptions,
-    keyof IGraphBehaviourOnlyInitializationOptions | 'getState'
-  >,
+  options: IGraphBehaviourInitializationOptions,
 ) => IGraphBehaviour<T>;
 
 /**
@@ -87,6 +118,12 @@ export interface IGraphBehaviour<T = any> {
   nodeGraphicsCreated?(options: IGraphBehaviourOptions): void;
 
   /**
+   * Runs when all node graphics are created.
+   * @param options The graph behaviour options.
+   */
+  allNodeGraphicsCreated?(options: IGraphBehaviourAllNodeOptions): void;
+
+  /**
    * Runs when the graphics for a node are rendered.
    * @param options The graph behaviour options.
    */
@@ -101,11 +138,21 @@ export type IGraphBehaviourOnlyInitializationOptions = Pick<
   | 'viewport'
   | 'appStateManager'
   | 'selection'
-  | 'nodeMap'
+  | 'graphicsMap'
   | 'simulation'
   | 'application'
   | 'allGraphics'
   | 'nodes'
+  | 'links'
+  | 'nodeLinks'
+>;
+
+/**
+ * Graph behaviour options passed to the constructor.
+ */
+export type IGraphBehaviourInitializationOptions = Pick<
+  IGraphBehaviourOptions,
+  keyof IGraphBehaviourOnlyInitializationOptions | 'getState'
 >;
 
 /**
@@ -174,13 +221,14 @@ export class GraphBehaviourManager {
       throw new Error('Cannot add the same type of graph behaviour twice.');
     }
 
+    this.#constructors.add(behaviour);
+
     const instance = new behaviour({
       ...this.#options,
       getState: <S>(constructor: GraphBehaviourConstructor<S>) =>
-        this.#getState(constructor, behaviour as IGraphBehaviour),
+        this.#getState(constructor, behaviour),
     });
 
-    this.#constructors.add(behaviour);
     this.#behaviours.add(instance);
 
     return this;
@@ -192,10 +240,10 @@ export class GraphBehaviourManager {
    */
   #getState<S>(
     behaviour: GraphBehaviourConstructor<S>,
-    requestingBehaviour: IGraphBehaviour,
+    requestingBehaviour: GraphBehaviourConstructor<any>,
   ): S {
     // get index of requesting behaviour
-    const requestingIndex = this.#behaviours.indexOf(requestingBehaviour);
+    const requestingIndex = this.#constructors.indexOf(requestingBehaviour);
 
     // get index of constructor for behaviour to get state for
     const index = this.#constructors.indexOf(
@@ -203,9 +251,16 @@ export class GraphBehaviourManager {
     );
 
     // if index of requesting behaviour is less than index of behaviour to get
-    // state for, then we cannot f/ulfill the request, since we cannot guarantee
+    // state for, then we cannot fulfill the request, since we cannot guarantee
     // that the behaviour to get state for has updated its state yet
     if (requestingIndex < index) {
+      console.error(
+        'Cannot get state for behaviour loaded after requesting behaviour.',
+        behaviour,
+        index,
+        requestingBehaviour,
+        requestingIndex,
+      );
       throw new Error(
         'Cannot get state for behaviour loaded after requesting behaviour.',
       );
@@ -215,19 +270,41 @@ export class GraphBehaviourManager {
     return this.#behaviours.get(index).getState?.() as S;
   }
 
+  #runBehaviourMethod<K extends MethodKeys<IGraphBehaviour>, P extends K>(
+    methodName: K,
+    options: Omit<
+      MethodOptions<IGraphBehaviour, K>,
+      keyof IGraphBehaviourOnlyInitializationOptions | 'getState'
+    >,
+  ): void {
+    for (const behaviour of this.#behaviours) {
+      behaviour[methodName]?.({
+        ...this.#options,
+        ...(options ?? {}),
+        getState: <S>(constructor: GraphBehaviourConstructor<S>) =>
+          this.#getState(
+            constructor,
+            behaviour.constructor as GraphBehaviourConstructor,
+          ),
+      } as IGraphBehaviourOptions);
+    }
+  }
+
   /**
-   * Runs behaviours on the graphics for a node on the graphicsCreated event.
+   * Runs behaviours on the graphics for a node on the nodeGraphicsCreated event.
    * @param options The graph behaviour options.
    */
   nodeGraphicsCreated(options: IGraphBehaviourOnlyNodeOptions): void {
-    for (const behaviour of this.#behaviours) {
-      behaviour.nodeGraphicsCreated?.({
-        ...this.#options,
-        ...options,
-        getState: <S>(constructor: GraphBehaviourConstructor<S>) =>
-          this.#getState(constructor, behaviour),
-      });
-    }
+    this.#runBehaviourMethod('nodeGraphicsCreated', options);
+  }
+
+  /**
+   * Runs behaviours on the graphics for all nodes on the allNodeGraphicsCreated
+   * event.
+   * @param options The graph behaviour options.
+   */
+  allNodeGraphicsCreated(options: IGraphBehaviourOnlyAllNodeOptions): void {
+    this.#runBehaviourMethod('allNodeGraphicsCreated', options);
   }
 
   /**
@@ -235,13 +312,6 @@ export class GraphBehaviourManager {
    * @param options The graph behaviour options.
    */
   graphicsRendered(options: IGraphBehaviourOnlyAllNodeOptions): void {
-    for (const behaviour of this.#behaviours) {
-      behaviour.graphicsRendered?.({
-        ...this.#options,
-        ...options,
-        getState: <S>(constructor: GraphBehaviourConstructor<S>) =>
-          this.#getState(constructor, behaviour),
-      });
-    }
+    this.#runBehaviourMethod('graphicsRendered', options);
   }
 }
