@@ -2,6 +2,7 @@
   "recommendations": [
     "bierner.lit-html",
     "esbenp.prettier-vscode",
-    "arcanis.vscode-zipfs"
+    "arcanis.vscode-zipfs",
+    "dbaeumer.vscode-eslint"
   ]
 }

@@ -1,5 +1,4 @@
 import { html } from '../utils/index.js';
-import { AppStateManager } from '../providers/index.js';
 import { StateManagedElement } from './state-managed-element.js';
 import { SearchBar } from './search-bar.js';
 import { Sidebar } from './sidebar.js';

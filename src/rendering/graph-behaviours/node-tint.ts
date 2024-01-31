@@ -1,6 +1,6 @@
 import * as pixi from 'pixi.js';
 import { IGraphBehaviourOptions, IGraphBehaviour } from './graph-behaviour.js';
-import { GraphDragBehaviour } from './graph-drag-behaviour.js';
+import { GraphDragBehaviour } from './drag.js';
 
 /**
  * Node tint behaviour.
@@ -28,7 +28,7 @@ export class GraphNodeTintBehaviour implements IGraphBehaviour {
       }
     });
 
-    graphics.on('pointerdown', (event) => {
+    graphics.on('pointerdown', () => {
       graphics.tint = 0x888888;
       text.tint = 0x888888;
     });

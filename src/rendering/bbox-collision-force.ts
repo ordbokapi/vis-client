@@ -1,10 +1,10 @@
 import * as d3 from 'd3';
 import * as pixi from 'pixi.js';
-// @ts-ignore
+// @ts-expect-error Broken types
 import { Viewport } from 'pixi-viewport';
-import { IndexedSet, Rect2D, Vector2D } from '../types/index.js';
+import { IndexedSet, Vector2D } from '../types/index.js';
 import { DebugPanel } from './debug-panel.js';
-import { INodeBBoxBehaviourState } from './graph-behaviours/graph-node-bbox-behaviour.js';
+import { INodeBBoxBehaviourState } from './graph-behaviours/node-bbox.js';
 
 /**
  * A force that prevents nodes from overlapping by applying a collision force

@@ -1,5 +1,5 @@
 import * as pixi from 'pixi.js';
-// @ts-ignore
+// @ts-expect-error Broken types
 import { Viewport } from 'pixi-viewport';
 import { Rect2D, Vector2D } from '../types/index.js';
 
@@ -69,7 +69,7 @@ export class BoundingBoxCache {
    * @param object An object.
    */
   get(object: pixi.DisplayObject): Rect2D {
-    let size = this.#sizes.get(object) ?? this.#cacheSize(object);
+    const size = this.#sizes.get(object) ?? this.#cacheSize(object);
 
     const topLeft = new Vector2D(object.position).subtract(size.divide(2));
 

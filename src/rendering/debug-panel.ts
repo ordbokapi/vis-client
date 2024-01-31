@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Rect2D, Vector2D } from '../types/index.js';
+import { Rect2D } from '../types/index.js';
 
 export class DebugPanel {
   #appCanvas: PIXI.Graphics;

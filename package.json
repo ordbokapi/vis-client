@@ -16,8 +16,14 @@
     "@parcel/transformer-inline-string": "2.11.0",
     "@parcel/transformer-webmanifest": "2.11.0",
     "@types/d3": "^7.4.3",
+    "@types/eslint": "^8",
     "@types/rbush": "^3",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
     "buffer": "^5.5.0||^6.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
     "parcel": "^2.11.0",
     "prettier": "^3.2.4",
     "punycode": "^2.0.0",
@@ -26,6 +32,9 @@
   },
   "scripts": {
     "start": "parcel static/index.html",
-    "build": "parcel build static/index.html --public-url https://vis.ordbokapi.org"
+    "build": "parcel build static/index.html --public-url https://vis.ordbokapi.org",
+    "format": "prettier --write 'src/**/*.ts'",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix"
   }
 }

@@ -60,8 +60,18 @@ export class Vector2D {
    * Subtract a vector from this vector.
    * @param v Vector to subtract.
    */
-  subtract(v: Vector2D): Vector2D {
-    return new Vector2D(this.x - v.x, this.y - v.y);
+  subtract(v: Vector2D): Vector2D;
+  /**
+   * Subtract a scalar from this vector.
+   * @param s Scalar to subtract.
+   */
+  subtract(s: number): Vector2D;
+  subtract(sOrV: number | Vector2D): Vector2D {
+    if (typeof sOrV === 'number') {
+      return new Vector2D(this.x - sOrV, this.y - sOrV);
+    } else {
+      return new Vector2D(this.x - sOrV.x, this.y - sOrV.y);
+    }
   }
 
   /**
@@ -166,6 +176,22 @@ export class Vector2D {
    */
   direction(v: Vector2D): Vector2D {
     return v.subtract(this).unit;
+  }
+
+  /**
+   * Modulate this vector by another vector.
+   */
+  modulate(v: Vector2D): Vector2D;
+  /**
+   * Modulate this vector by a scalar.
+   */
+  modulate(s: number): Vector2D;
+  modulate(sOrV: number | Vector2D): Vector2D {
+    if (typeof sOrV === 'number') {
+      return new Vector2D(this.x % sOrV, this.y % sOrV);
+    } else {
+      return new Vector2D(this.x % sOrV.x, this.y % sOrV.y);
+    }
   }
 
   /**

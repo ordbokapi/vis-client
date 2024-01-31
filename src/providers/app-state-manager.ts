@@ -39,7 +39,7 @@ export interface ScopedAppStateManager {
    */
   observe<K extends keyof AppState>(
     key: K,
-    listener: (value: AppState[K]) => void,
+    listener: (value: AppState[K], source: object) => void,
   ): void;
 
   /**
@@ -50,7 +50,7 @@ export interface ScopedAppStateManager {
    */
   unobserve<K extends keyof AppState>(
     key: K,
-    listener: (value: AppState[K]) => void,
+    listener: (value: AppState[K], source: object) => void,
   ): void;
 
   /**
@@ -117,7 +117,7 @@ export class AppStateManager {
   #observers: TwoKeyMap<
     keyof AppState,
     object,
-    Set<(value: AppState[keyof AppState]) => void>
+    Set<(value: AppState[keyof AppState], source: object) => void>
   > = new TwoKeyMap();
 
   /**
@@ -238,7 +238,7 @@ export class AppStateManager {
   observe<K extends keyof AppState>(
     subscriber: object,
     key: K,
-    listener: (value: AppState[K]) => void,
+    listener: (value: AppState[K], source: object) => void,
   ) {
     let set = this.#observers.get(key, subscriber);
 
@@ -259,7 +259,7 @@ export class AppStateManager {
   unobserve<K extends keyof AppState>(
     subscriber: object,
     key: K,
-    listener: (value: AppState[K]) => void,
+    listener: (value: AppState[K], source: object) => void,
   ) {
     const set = this.#observers.get(key, subscriber);
     if (!set) return;
@@ -283,7 +283,7 @@ export class AppStateManager {
 
       for (const listener of listeners) {
         try {
-          listener(value);
+          listener(value, subscriber);
         } catch (error) {
           console.warn(`Failed to notify listener for ${key}: ${error}`);
         }

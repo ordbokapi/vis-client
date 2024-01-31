@@ -1,5 +1,5 @@
 import * as pixi from 'pixi.js';
-// @ts-ignore
+// @ts-expect-error Broken types
 import { Viewport as PixiViewport } from 'pixi-viewport';
 import { html, text } from '../utils/index.js';
 import { GraphView } from '../rendering/index.js';

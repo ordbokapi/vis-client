@@ -1,3 +1,11 @@
 {
-  "singleQuote": true
+  "singleQuote": true,
+  "overrides": [
+    {
+      "files": "*.{jsonc,*rc}",
+      "options": {
+        "trailingComma": "none"
+      }
+    }
+  ]
 }

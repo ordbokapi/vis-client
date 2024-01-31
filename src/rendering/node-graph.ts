@@ -1,5 +1,5 @@
 import * as pixi from 'pixi.js';
-// @ts-ignore
+// @ts-expect-error Broken types
 import { Viewport as PixiViewport } from 'pixi-viewport';
 import {
   AppStateManager,
@@ -16,6 +16,7 @@ import {
   GraphSelectionBehaviour,
   GraphNodeTintBehaviour,
   GraphNodeBBoxBehaviour,
+  GraphGridBehaviour,
 } from './graph-behaviours/index.js';
 
 /**
@@ -137,6 +138,7 @@ export class NodeGraph {
     this.#viewport.addChild(this.#nodeGraphicsContainer);
 
     this.#nodeBehaviourManager
+      .register(GraphGridBehaviour)
       .register(GraphNodeBBoxBehaviour)
       .register(GraphDragBehaviour)
       .register(GraphSelectionBehaviour)
@@ -333,13 +335,20 @@ export class NodeGraph {
       });
     });
 
-    this.#nodeBehaviourManager.allNodeGraphicsCreated({});
+    this.#nodeBehaviourManager.allNodeGraphicsCreated();
   }
 
   /**
    * Renders the graph.
    */
   render() {
+    // Update resolution value on text in nodes
+    const textResolution = this.#viewport.scale.x;
+    for (const node of this.#nodes) {
+      const text = node.getChildAt(0) as pixi.Text;
+      text.resolution = textResolution;
+    }
+
     this.#edgeCanvas.clear();
 
     this.#edgeCanvas.lineStyle(1, 0x00ffff, 1);
@@ -365,9 +374,6 @@ export class NodeGraph {
       graphics.y = simulationNodes[i].y!;
     }
 
-    this.#nodeBehaviourManager.graphicsRendered({
-      allGraphics: this.#nodes,
-      nodes: this.#d3Nodes,
-    });
+    this.#nodeBehaviourManager.graphicsRendered();
   }
 }

@@ -1,0 +1,30 @@
+name: Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
+          cache: 'yarn'
+
+      - name: Install dependencies
+        id: install
+        run: yarn --immutable
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Check for TypeScript errors
+        run: yarn tsc --noEmit
+        # run even if linting fails
+        if: always() && ${{ steps.install.outcome == 'success' }}

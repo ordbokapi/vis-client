@@ -1,13 +1,14 @@
 import * as d3 from 'd3';
 import * as pixi from 'pixi.js';
-// @ts-ignore
+// @ts-expect-error Broken types
 import { Viewport } from 'pixi-viewport';
 import { IndexedSet, TwoKeyMap } from '../../types/index.js';
 import { Article, ScopedAppStateManager } from '../../providers/index.js';
 import { NodeSelection } from '../node-selection.js';
 
 type MethodInner<T, K extends keyof T> = K extends any
-  ? T[K] extends Function
+  ? // eslint-disable-next-line @typescript-eslint/ban-types
+    T[K] extends Function
     ? K
     : never
   : never;
@@ -104,6 +105,7 @@ export interface IGraphBehaviour<T = any> {
    * Runs when the graph behaviour is registered.
    * @param options The graph behaviour options.
    */
+  // eslint-disable-next-line @typescript-eslint/ban-types
   constructor: GraphBehaviourConstructor<T> | Function;
 
   /**
@@ -128,6 +130,12 @@ export interface IGraphBehaviour<T = any> {
    * @param options The graph behaviour options.
    */
   graphicsRendered?(options: IGraphBehaviourAllNodeOptions): void;
+
+  /**
+   * Runs when a re-render is requested.
+   * @param options The graph behaviour options.
+   */
+  renderRequested?(options: IGraphBehaviourOptions): void;
 }
 
 /**
@@ -164,25 +172,11 @@ export type IGraphBehaviourOnlyNodeOptions = Omit<
 >;
 
 /**
- * Only graph behaviour options available after node creation, for all nodes.
- */
-export type IGraphBehaviourOnlyAllNodeOptions = Omit<
-  IGraphBehaviourOptions,
-  | keyof IGraphBehaviourOnlyInitializationOptions
-  | 'getState'
-  | 'node'
-  | 'index'
-  | 'graphics'
->;
-
-/**
  * Graph behaviour options available after node creation, for all nodes.
  */
 export type IGraphBehaviourAllNodeOptions = Pick<
   IGraphBehaviourOptions,
-  | keyof IGraphBehaviourOnlyAllNodeOptions
-  | keyof IGraphBehaviourOnlyInitializationOptions
-  | 'getState'
+  keyof IGraphBehaviourOnlyInitializationOptions | 'getState'
 >;
 
 /**
@@ -270,7 +264,7 @@ export class GraphBehaviourManager {
     return this.#behaviours.get(index).getState?.() as S;
   }
 
-  #runBehaviourMethod<K extends MethodKeys<IGraphBehaviour>, P extends K>(
+  #runBehaviourMethod<K extends MethodKeys<IGraphBehaviour>>(
     methodName: K,
     options: Omit<
       MethodOptions<IGraphBehaviour, K>,
@@ -303,15 +297,15 @@ export class GraphBehaviourManager {
    * event.
    * @param options The graph behaviour options.
    */
-  allNodeGraphicsCreated(options: IGraphBehaviourOnlyAllNodeOptions): void {
-    this.#runBehaviourMethod('allNodeGraphicsCreated', options);
+  allNodeGraphicsCreated(): void {
+    this.#runBehaviourMethod('allNodeGraphicsCreated', {});
   }
 
   /**
    * Runs behaviours on the graphics for a node on the graphicsRendered event.
    * @param options The graph behaviour options.
    */
-  graphicsRendered(options: IGraphBehaviourOnlyAllNodeOptions): void {
-    this.#runBehaviourMethod('graphicsRendered', options);
+  graphicsRendered(): void {
+    this.#runBehaviourMethod('graphicsRendered', {});
   }
 }

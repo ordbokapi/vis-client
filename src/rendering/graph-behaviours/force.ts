@@ -6,7 +6,7 @@ import {
 } from './graph-behaviour.js';
 import { Article } from '../../providers/index.js';
 import { BBoxCollisionForce } from '../bbox-collision-force.js';
-import { GraphNodeBBoxBehaviour } from './graph-node-bbox-behaviour.js';
+import { GraphNodeBBoxBehaviour } from './node-bbox.js';
 
 /**
  * Node force behaviour.

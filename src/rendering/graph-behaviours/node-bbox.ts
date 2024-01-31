@@ -3,12 +3,11 @@ import * as d3 from 'd3';
 import RBush from 'rbush';
 import {
   IGraphBehaviour,
-  IGraphBehaviourAllNodeOptions,
   IGraphBehaviourOnlyInitializationOptions,
 } from './graph-behaviour.js';
 import { Article } from '../../providers/index.js';
 import { BoundingBoxCache } from '../bounding-box-cache.js';
-import { IndexedSet, Rect2D, Vector2D } from '../../types/index.js';
+import { IndexedSet, Rect2D } from '../../types/index.js';
 
 /**
  * Node bounding box behaviour state.
@@ -68,13 +67,14 @@ export class GraphNodeBBoxBehaviour
     nodes,
     simulation,
   }: IGraphBehaviourOnlyInitializationOptions) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
 
     this.#graphics = allGraphics;
     this.#nodes = nodes;
 
     this.#cache = new BoundingBoxCache(viewport);
-    // @ts-ignore
+    // @ts-expect-error Broken types
     this.#tree = new RBush<RStarTreeLeafNode>();
     this.#state = {
       cache: this.#cache,
