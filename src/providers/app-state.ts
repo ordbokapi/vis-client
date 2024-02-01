@@ -1,6 +1,5 @@
 import { Article } from './api-client.js';
-import { Dictionary, Vector2D } from '../types/index.js';
-import * as msgpack from '@msgpack/msgpack';
+import { Dictionary, NodePositions, Vector2D } from '../types/index.js';
 
 /**
  * Manages state for the application. Allows for state to be shared between
@@ -35,7 +34,7 @@ export class AppState {
   /**
    * The node positions for the current graph view.
    */
-  nodePositions?: { [id: string]: Vector2D };
+  nodePositions?: NodePositions;
 
   /**
    * State of keyboard modifiers.
@@ -93,12 +92,7 @@ export class AppState {
     if (this.debug) addParam('debug', 'true');
 
     if (all && this.nodePositions) {
-      const nodePositions: { [id: string]: { x: number; y: number } } = {};
-      for (const [key, value] of Object.entries(this.nodePositions)) {
-        nodePositions[key] = { x: value.x, y: value.y };
-      }
-      const encoded = msgpack.encode(nodePositions);
-      addParam('nodePositions', btoa(String.fromCharCode(...encoded)));
+      addParam('nodePositions', this.nodePositions.toString());
     }
 
     return params.toString();
@@ -122,7 +116,7 @@ export class AppState {
       try {
         state[key] = valueFn(value);
       } catch (e) {
-        console.warn(`Failed to deserialize ${key}: ${e}`);
+        console.warn(`Failed to deserialize ${key}:`, e);
       }
     };
 
@@ -131,18 +125,7 @@ export class AppState {
     trySet('zoomLevel', (value) => Number.parseInt(value, 10));
     trySet('translation', (value) => Vector2D.parse(value));
     trySet('debug', (value) => value === 'true');
-    trySet('nodePositions', (value) => {
-      const decoded = msgpack.decode(
-        Uint8Array.from(atob(value), (c) => c.charCodeAt(0)),
-      );
-      const nodePositions: { [id: string]: Vector2D } = {};
-      for (const [key, value] of Object.entries(
-        decoded as Record<string, { x: number; y: number }>,
-      )) {
-        nodePositions[key] = new Vector2D(value.x, value.y);
-      }
-      return nodePositions;
-    });
+    trySet('nodePositions', (value) => NodePositions.fromString(value));
 
     return state;
   }

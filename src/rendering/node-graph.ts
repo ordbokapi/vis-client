@@ -7,7 +7,12 @@ import {
   ScopedAppStateManager,
 } from '../providers/index.js';
 import { NodeSelection } from './node-selection.js';
-import { IndexedSet, TwoKeyMap, Vector2D } from '../types/index.js';
+import {
+  IndexedSet,
+  NodePositions,
+  TwoKeyMap,
+  Vector2D,
+} from '../types/index.js';
 import {
   GraphBehaviourManager,
   GraphDebugBehaviour,
@@ -156,11 +161,11 @@ export class NodeGraph {
     });
 
     this.#appStateManager.on('request-node-positions', () => {
-      const nodePositions: { [id: number]: Vector2D } = {};
+      const nodePositions = new NodePositions();
       this.#simulation.nodes().forEach((node) => {
-        nodePositions[node.id] = new Vector2D(
-          Math.round(node.x!),
-          Math.round(node.y!),
+        nodePositions.set(
+          node.id,
+          new Vector2D(Math.round(node.x!), Math.round(node.y!)),
         );
       });
       this.#appStateManager.set('nodePositions', nodePositions);
@@ -252,7 +257,7 @@ export class NodeGraph {
     let missed = false;
 
     for (const node of this.#simulation.nodes()) {
-      const position = nodePositions[node.id];
+      const position = nodePositions.get(node.id);
       if (position) {
         node.x = position.x;
         node.y = position.y;
