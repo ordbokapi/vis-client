@@ -1,6 +1,6 @@
 {
   "name": "vis-client",
-  "packageManager": "yarn@4.1.0",
+  "packageManager": "yarn@4.4.1",
   "type": "module",
   "dependencies": {
     "@msgpack/msgpack": "^3.0.0-beta2",
