@@ -4813,9 +4813,14 @@ __metadata:
   linkType: hard
 
 "pixi-viewport@npm:^5.0.2":
-  version: 5.0.2
-  resolution: "pixi-viewport@npm:5.0.2"
-  checksum: 10c0/03487c6058be518bbd9b0120ce9a78db10aba9d6cdd61c88f5292f947d874031bfa7d275ee806501d8470b7bba5a5f6da25d492735a5ff271a42f94bead14651
+  version: 5.1.0
+  resolution: "pixi-viewport@npm:5.1.0"
+  peerDependencies:
+    "@pixi/display": ^6.5.8
+    "@pixi/interaction": ^6.5.8
+    "@pixi/math": ^6.5.8
+    "@pixi/ticker": ^6.5.8
+  checksum: 10c0/88e0e03db1beef92ea42f70b0f3749afcfdab153d66bd00727fee2c0fa62d74194a0311ed0b93bc5d61a0b87538527913fbe7a31aa39bd2c6071205a8ec8f5c0
   languageName: node
   linkType: hard
 
