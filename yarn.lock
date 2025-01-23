@@ -2254,9 +2254,9 @@ __metadata:
   linkType: hard
 
 "@types/rbush@npm:^3":
-  version: 3.0.3
-  resolution: "@types/rbush@npm:3.0.3"
-  checksum: 10c0/a0c2425eb9cb43f442ef48d9d0221c006e0f7303c35f97d443c9832e7c824572b7206a68f9ffe486ba0789cc19600732c3412729211f0c1a5058e7b3f0fd937d
+  version: 3.0.4
+  resolution: "@types/rbush@npm:3.0.4"
+  checksum: 10c0/430f60878b46feb68b2a50ddac684844ed895d73ada8932c421a2b8ef56cca8b9211109250d00a760a1f7a5c4ec6fb05992d1b235f3d48b5ba8528ec517c3861
   languageName: node
   linkType: hard
 
