@@ -1,4 +1,4 @@
-import appLogo from '../../static/images/ordbokapi-vis-client-logo-in-app.png';
+import appLogo from 'url:../../static/images/ordbokapi-vis-client-logo-in-app.png';
 import { html } from '../utils/index.js';
 
 /**
