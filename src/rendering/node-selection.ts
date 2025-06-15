@@ -1,4 +1,4 @@
-import { Graphics } from 'pixi.js';
+import { Container } from 'pixi.js';
 
 /**
  * Represents a selection of nodes.
@@ -7,7 +7,7 @@ export class NodeSelection {
   /**
    * The nodes in the selection.
    */
-  #nodes: Set<Graphics> = new Set();
+  #nodes: Set<Container> = new Set();
 
   /**
    * The tint to apply to selected nodes.
@@ -19,7 +19,7 @@ export class NodeSelection {
    * @param nodes The initial nodes in the selection.
    * @param tint The tint to apply to selected nodes.
    */
-  constructor(nodes: Iterable<Graphics> = [], tint = 0x666666) {
+  constructor(nodes: Iterable<Container> = [], tint = 0x666666) {
     this.#nodes = new Set(nodes);
     this.#tint = tint;
   }
@@ -45,7 +45,7 @@ export class NodeSelection {
   /**
    * Iterates over the nodes in the selection.
    */
-  [Symbol.iterator](): IterableIterator<Graphics> {
+  [Symbol.iterator](): IterableIterator<Container> {
     return this.#nodes.values();
   }
 
@@ -59,7 +59,7 @@ export class NodeSelection {
   /**
    * Adds a node to the selection.
    */
-  add(node: Graphics) {
+  add(node: Container) {
     this.#nodes.add(node);
     node.tint = this.#tint;
   }
@@ -67,7 +67,7 @@ export class NodeSelection {
   /**
    * Removes a node from the selection.
    */
-  delete(node: Graphics) {
+  delete(node: Container) {
     this.#nodes.delete(node);
     node.tint = 0xffffff;
   }
@@ -75,7 +75,7 @@ export class NodeSelection {
   /**
    * Checks whether the given node is in the selection.
    */
-  has(node: Graphics) {
+  has(node: Container) {
     return this.#nodes.has(node);
   }
 
@@ -93,10 +93,10 @@ export class NodeSelection {
   /**
    * Selects the given nodes.
    */
-  select(nodes: Iterable<Graphics> | Graphics) {
+  select(nodes: Iterable<Container> | Container) {
     this.clear();
 
-    if (nodes instanceof Graphics) {
+    if (nodes instanceof Container) {
       this.add(nodes);
       return;
     }

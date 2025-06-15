@@ -14,7 +14,7 @@ import { NodeSelection } from '../node-selection.js';
 export class GraphSelectionBehaviour implements IGraphBehaviour {
   #appStateManager!: ScopedAppStateManager;
   #selection!: NodeSelection;
-  #graphics?: pixi.Graphics;
+  #graphics?: pixi.Container;
   #node?: d3.SimulationNodeDatum & Article;
   #isMouseDown = false;
   #lastPosition = new Vector2D();

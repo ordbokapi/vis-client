@@ -1,0 +1,284 @@
+diff --git a/dist/InputManager.d.ts b/dist/InputManager.d.ts
+index 71cd57e27c78b331fcb8db187b56ea5d8dd37f4d..c45e6c29b9140e3b047b0a37b5dbb27a76e4c77c 100644
+--- a/dist/InputManager.d.ts
++++ b/dist/InputManager.d.ts
+@@ -1,5 +1,5 @@
+ import { FederatedPointerEvent, Point, PointData } from 'pixi.js';
+-import type { Viewport } from './Viewport';
++import type { Viewport } from './Viewport.ts';
+ export interface IViewportTouch {
+     id: number;
+     last: PointData | null;
+diff --git a/dist/PluginManager.d.ts b/dist/PluginManager.d.ts
+index a5bf63e43c92dfede767be5bb46dc783694857d3..613f6a45ca4adc9e482cc127f41313d90b73292a 100644
+--- a/dist/PluginManager.d.ts
++++ b/dist/PluginManager.d.ts
+@@ -1,6 +1,6 @@
+ import type { FederatedEvent } from 'pixi.js';
+-import type { Animate, Bounce, Clamp, ClampZoom, Decelerate, Drag, Follow, MouseEdges, Pinch, Plugin, Snap, SnapZoom, Wheel } from './plugins';
+-import type { Viewport } from './Viewport';
++import type { Animate, Bounce, Clamp, ClampZoom, Decelerate, Drag, Follow, MouseEdges, Pinch, Plugin, Snap, SnapZoom, Wheel } from './plugins.ts';
++import type { Viewport } from './Viewport.ts';
+ export declare class PluginManager {
+     plugins: Partial<Record<string, Plugin>>;
+     list: Array<Plugin>;
+diff --git a/dist/Viewport.d.ts b/dist/Viewport.d.ts
+index dc3db7348d75a50d4262f075d662e7dbbc50224b..22a6e1048fd2593541a02bd0ac1f627b58149166 100644
+--- a/dist/Viewport.d.ts
++++ b/dist/Viewport.d.ts
+@@ -1,7 +1,7 @@
+ import { Container, DestroyOptions, EventSystem, IHitArea, Point, PointData, Rectangle, Ticker } from 'pixi.js';
+-import { InputManager } from './InputManager';
+-import { PluginManager } from './PluginManager';
+-import { IAnimateOptions, IBounceOptions, IClampOptions, IClampZoomOptions, IDecelerateOptions, IDragOptions, IFollowOptions, IMouseEdgesOptions, IPinchOptions, ISnapOptions, ISnapZoomOptions, IWheelOptions } from './plugins';
++import { InputManager } from './InputManager.ts';
++import { PluginManager } from './PluginManager.ts';
++import { IAnimateOptions, IBounceOptions, IClampOptions, IClampZoomOptions, IDecelerateOptions, IDragOptions, IFollowOptions, IMouseEdgesOptions, IPinchOptions, ISnapOptions, ISnapZoomOptions, IWheelOptions } from './plugins.ts';
+ export interface IViewportOptions {
+     screenWidth?: number;
+     screenHeight?: number;
+diff --git a/dist/global.d.ts b/dist/global.d.ts
+index 538866171e08ff9895b5a56cc1d5d19b9a06cb85..6fd5125299e8ed8ce31000fe3d58c3026b138fec 100644
+--- a/dist/global.d.ts
++++ b/dist/global.d.ts
+@@ -1,11 +1,11 @@
+ declare namespace PixiMixins
+ {
+-  type Viewport = import('./Viewport').Viewport;
+-  type PixiViewportClickedEvent = import('./types').ClickedEvent;
+-  type PixiViewportDragEvent = import('./types').DragEvent;
+-  type PixiViewportMovedEvent = import('./types').MovedEvent;
+-  type PixiViewportZoomedEvent = import('./types').ZoomedEvent;
+-  type PixiViewportWheelStartEvent = import('./types').WheelStartEvent;
++  type Viewport = import('./Viewport.ts').Viewport;
++  type PixiViewportClickedEvent = import('./types.ts').ClickedEvent;
++  type PixiViewportDragEvent = import('./types.ts').DragEvent;
++  type PixiViewportMovedEvent = import('./types.ts').MovedEvent;
++  type PixiViewportZoomedEvent = import('./types.ts').ZoomedEvent;
++  type PixiViewportWheelStartEvent = import('./types.ts').WheelStartEvent;
+ 
+   interface ContainerEvents
+   {
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 83ef0ce3b98d8e5d2829169992b5b04da28742c0..91bca6f5fd6b659e8d6b82a4a73487439d292fee 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,6 +1,6 @@
+ ///<reference path="./global.d.ts" />
+-export * from './ease';
+-export * from './InputManager';
+-export * from './PluginManager';
+-export * from './plugins';
+-export * from './Viewport';
++export * from './ease.ts';
++export * from './InputManager.ts';
++export * from './PluginManager.ts';
++export * from './plugins/index.ts';
++export * from './Viewport.ts';
+diff --git a/dist/plugins/Animate.d.ts b/dist/plugins/Animate.d.ts
+index 5580e258ad1db696af83fe96b861d8823cc83b5b..d7fab908d8a9f475f370c93c4da71234d821c111 100644
+--- a/dist/plugins/Animate.d.ts
++++ b/dist/plugins/Animate.d.ts
+@@ -1,6 +1,6 @@
+ import { PointData } from 'pixi.js';
+-import { Plugin } from './Plugin';
+-import type { Viewport } from '../Viewport';
++import { Plugin } from './Plugin.ts';
++import type { Viewport } from '../Viewport.ts';
+ export interface IAnimateOptions {
+     time?: number;
+     position?: PointData;
+diff --git a/dist/plugins/Bounce.d.ts b/dist/plugins/Bounce.d.ts
+index b4ec9900a59295a1ef1b6c78a25437858466a00b..26b4af1700959930e0f6b5dc607f47ac1a57a363 100644
+--- a/dist/plugins/Bounce.d.ts
++++ b/dist/plugins/Bounce.d.ts
+@@ -1,6 +1,6 @@
+ import { Rectangle } from 'pixi.js';
+-import { Plugin } from './Plugin';
+-import type { Viewport } from '../Viewport';
++import { Plugin } from './Plugin.ts';
++import type { Viewport } from '../Viewport.ts';
+ export interface IBounceOptions {
+     sides?: 'all' | 'horizontal' | 'vertical' | string;
+     friction?: number;
+diff --git a/dist/plugins/Clamp.d.ts b/dist/plugins/Clamp.d.ts
+index 9a0b11df28ce6ff2e00169074b0ca129328eaa49..6f98055ae3328764d87b8904b3f19131b107a76c 100644
+--- a/dist/plugins/Clamp.d.ts
++++ b/dist/plugins/Clamp.d.ts
+@@ -1,5 +1,5 @@
+-import { Plugin } from './Plugin';
+-import type { Viewport } from '../Viewport';
++import { Plugin } from './Plugin.ts';
++import type { Viewport } from '../Viewport.ts';
+ export interface IClampOptions {
+     left?: number | boolean | null;
+     top?: number | boolean | null;
+diff --git a/dist/plugins/ClampZoom.d.ts b/dist/plugins/ClampZoom.d.ts
+index b44a428564e5f0600a2d2ef6e0220cb9bd9e4523..1a965c137dd4b73f4b41e7b87a332df12d32dc64 100644
+--- a/dist/plugins/ClampZoom.d.ts
++++ b/dist/plugins/ClampZoom.d.ts
+@@ -1,5 +1,5 @@
+-import { Plugin } from './Plugin';
+-import type { Viewport } from '../Viewport';
++import { Plugin } from './Plugin.ts';
++import type { Viewport } from '../Viewport.ts';
+ export interface IClampZoomOptions {
+     minWidth?: number | null;
+     minHeight?: number | null;
+diff --git a/dist/plugins/Decelerate.d.ts b/dist/plugins/Decelerate.d.ts
+index 743b8740f6f2d73c717984b6af22e462fd4f0c05..b7042d8ceac57f38f928d2dccc0fcc2c825bbf39 100644
+--- a/dist/plugins/Decelerate.d.ts
++++ b/dist/plugins/Decelerate.d.ts
+@@ -1,6 +1,6 @@
+ import { MovedEvent } from '../types';
+-import { Plugin } from './Plugin';
+-import type { Viewport } from '../Viewport';
++import { Plugin } from './Plugin.ts';
++import type { Viewport } from '../Viewport.ts';
+ export interface IDecelerateOptions {
+     friction?: number;
+     bounce?: number;
+diff --git a/dist/plugins/Drag.d.ts b/dist/plugins/Drag.d.ts
+index 2e88373970eae53a4422e2fb6b85cf54655cab5c..f164ae2e8b4f3352c2960ad51eac399b7ac63836 100644
+--- a/dist/plugins/Drag.d.ts
++++ b/dist/plugins/Drag.d.ts
+@@ -1,6 +1,6 @@
+-import { Plugin } from './Plugin';
++import { Plugin } from './Plugin.ts';
+ import type { FederatedPointerEvent, PointData } from 'pixi.js';
+-import type { Viewport } from '../Viewport';
++import type { Viewport } from '../Viewport.ts';
+ export interface IDragOptions {
+     direction?: string;
+     pressDrag?: boolean;
+diff --git a/dist/plugins/Follow.d.ts b/dist/plugins/Follow.d.ts
+index db4527702225d8300cc84e9ae58b5a8baf8580a5..5228ef76d34e05f8552679a4474fefb748f9262f 100644
+--- a/dist/plugins/Follow.d.ts
++++ b/dist/plugins/Follow.d.ts
+@@ -1,6 +1,6 @@
+-import { Plugin } from './Plugin';
++import { Plugin } from './Plugin.ts';
+ import type { Container, PointData } from 'pixi.js';
+-import type { Viewport } from '../Viewport';
++import type { Viewport } from '../Viewport.ts';
+ export interface IFollowOptions {
+     speed?: number;
+     acceleration?: number | null;
+diff --git a/dist/plugins/MouseEdges.d.ts b/dist/plugins/MouseEdges.d.ts
+index dff048d1e6f6a4b672eb6055869b3cb96dc5c590..00dc55d11991b9bb6037828e5a8b6a2d1a6f6343 100644
+--- a/dist/plugins/MouseEdges.d.ts
++++ b/dist/plugins/MouseEdges.d.ts
+@@ -1,6 +1,6 @@
+-import { Plugin } from './Plugin';
++import { Plugin } from './Plugin.ts';
+ import type { FederatedPointerEvent } from 'pixi.js';
+-import type { Viewport } from '../Viewport';
++import type { Viewport } from '../Viewport.ts';
+ export interface IMouseEdgesInsets {
+     radius?: number | null;
+     distance?: number | null;
+diff --git a/dist/plugins/Pinch.d.ts b/dist/plugins/Pinch.d.ts
+index 96243f690516564d5ca84e088ccfa3aeca3c3426..471f390925176d1252b75d21a4b058eaf59174d4 100644
+--- a/dist/plugins/Pinch.d.ts
++++ b/dist/plugins/Pinch.d.ts
+@@ -1,7 +1,7 @@
+ import { Point } from 'pixi.js';
+-import { Plugin } from './Plugin';
++import { Plugin } from './Plugin.ts';
+ import type { FederatedPointerEvent, PointData } from 'pixi.js';
+-import type { Viewport } from '../Viewport';
++import type { Viewport } from '../Viewport.ts';
+ export interface IPinchOptions {
+     noDrag?: boolean;
+     percent?: number;
+diff --git a/dist/plugins/Plugin.d.ts b/dist/plugins/Plugin.d.ts
+index e5096cc458ba0a9b05d3c1abe7959434954588c3..ab16b07e7fdeca3a98a06e0b65d2637cfe994d19 100644
+--- a/dist/plugins/Plugin.d.ts
++++ b/dist/plugins/Plugin.d.ts
+@@ -1,5 +1,5 @@
+ import type { FederatedEvent } from 'pixi.js';
+-import type { Viewport } from '../Viewport';
++import type { Viewport } from '../Viewport.ts';
+ export declare class Plugin {
+     readonly parent: Viewport;
+     paused: boolean;
+diff --git a/dist/plugins/Snap.d.ts b/dist/plugins/Snap.d.ts
+index 825d95b7c4f014e930fbeec5579141b1fbeda565..f1c2e53eb800346eb427ed56b50a847f50d4dcbb 100644
+--- a/dist/plugins/Snap.d.ts
++++ b/dist/plugins/Snap.d.ts
+@@ -1,5 +1,5 @@
+-import { Plugin } from './Plugin';
+-import type { Viewport } from '../Viewport';
++import { Plugin } from './Plugin.ts';
++import type { Viewport } from '../Viewport.ts';
+ export interface ISnapOptions {
+     topLeft?: boolean;
+     friction?: number;
+diff --git a/dist/plugins/SnapZoom.d.ts b/dist/plugins/SnapZoom.d.ts
+index 0fd807c6931922a017293d5db744645775285796..612c19e6019fabdaffe0164ffda05901654a4d5e 100644
+--- a/dist/plugins/SnapZoom.d.ts
++++ b/dist/plugins/SnapZoom.d.ts
+@@ -1,6 +1,6 @@
+-import { Plugin } from './Plugin';
++import { Plugin } from './Plugin.ts';
+ import type { Point } from 'pixi.js';
+-import type { Viewport } from '../Viewport';
++import type { Viewport } from '../Viewport.ts';
+ export interface ISnapZoomOptions {
+     width?: number;
+     height?: number;
+diff --git a/dist/plugins/Wheel.d.ts b/dist/plugins/Wheel.d.ts
+index a86c19c18e35f835e2cf53815232e3ad6abc6d3e..49cf7bdfdff76064518a1ed22168e98990388f8c 100644
+--- a/dist/plugins/Wheel.d.ts
++++ b/dist/plugins/Wheel.d.ts
+@@ -1,6 +1,6 @@
+ import { Point, PointData } from 'pixi.js';
+-import { Plugin } from './Plugin';
+-import type { Viewport } from '../Viewport';
++import { Plugin } from './Plugin.ts';
++import type { Viewport } from '../Viewport.ts';
+ export interface IWheelOptions {
+     percent?: number;
+     smooth?: false | number;
+diff --git a/dist/plugins/index.d.ts b/dist/plugins/index.d.ts
+index 58a85162ab5c6f465994f0054bea8a74d9613ef0..94024e1cbf9181482c48fb3cdd37ee03a353bdbf 100644
+--- a/dist/plugins/index.d.ts
++++ b/dist/plugins/index.d.ts
+@@ -1,13 +1,13 @@
+-export * from './Animate';
+-export * from './Bounce';
+-export * from './Clamp';
+-export * from './ClampZoom';
+-export * from './Decelerate';
+-export * from './Drag';
+-export * from './Follow';
+-export * from './MouseEdges';
+-export * from './Pinch';
+-export * from './Plugin';
+-export * from './Snap';
+-export * from './SnapZoom';
+-export * from './Wheel';
++export * from './Animate.ts';
++export * from './Bounce.ts';
++export * from './Clamp.ts';
++export * from './ClampZoom.ts';
++export * from './Decelerate.ts';
++export * from './Drag.ts';
++export * from './Follow.ts';
++export * from './MouseEdges.ts';
++export * from './Pinch.ts';
++export * from './Plugin.ts';
++export * from './Snap.ts';
++export * from './SnapZoom.ts';
++export * from './Wheel.ts';
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+index a72eb234f15d5b27014cfec5f25e146a13329557..c129876db811c629a18a2072cb579ba1ff6e4b20 100644
+--- a/dist/types.d.ts
++++ b/dist/types.d.ts
+@@ -1,5 +1,5 @@
+ import type { FederatedEvent, Point } from 'pixi.js';
+-import type { Viewport } from './Viewport';
++import type { Viewport } from './Viewport.ts';
+ export type DragEvent = {
+     event: FederatedEvent;
+     screen: Point;

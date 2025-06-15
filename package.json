@@ -9,8 +9,8 @@
     "@pixi/math": "^7.4.3",
     "@pixi/ticker": "^7.4.3",
     "d3": "^7.9.0",
-    "pixi-viewport": "^5.1.0",
-    "pixi.js": "^7.3.3",
+    "pixi-viewport": "patch:pixi-viewport@npm%3A6.0.3#~/.yarn/patches/pixi-viewport-npm-6.0.3-9a81774b71.patch",
+    "pixi.js": "^8.10.1",
     "rbush": "^4.0.1"
   },
   "devDependencies": {

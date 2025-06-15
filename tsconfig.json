@@ -8,7 +8,7 @@
     "noEmit": true,
     "lib": ["DOM", "ES2022"],
     "strict": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*"]
 }

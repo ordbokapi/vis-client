@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import { Rect2D } from '../types/index.js';
 
 export class DebugPanel {
-  #appCanvas: PIXI.Graphics;
+  #appCanvas: PIXI.Container;
   #debugPanelRect: Rect2D;
   #texts: PIXI.Text[];
   #textStyles: PIXI.TextStyle;
@@ -10,7 +10,7 @@ export class DebugPanel {
   #lineHeight: number;
 
   constructor(
-    appCanvas: PIXI.Graphics,
+    appCanvas: PIXI.Container,
     debugPanelRect: Rect2D = new Rect2D(20, 100, 200, 400),
   ) {
     this.#appCanvas = appCanvas;
@@ -26,19 +26,21 @@ export class DebugPanel {
   }
 
   #initializePanel(): void {
-    this.#appCanvas.lineStyle(1, 0xffffff);
-    this.#appCanvas.beginFill(0x000000, 0.5);
-    this.#appCanvas.drawRect(
-      this.#debugPanelRect.x,
-      this.#debugPanelRect.y,
-      this.#debugPanelRect.width,
-      this.#debugPanelRect.height,
+    this.#appCanvas.addChild(
+      new PIXI.Graphics()
+        .rect(
+          this.#debugPanelRect.x,
+          this.#debugPanelRect.y,
+          this.#debugPanelRect.width,
+          this.#debugPanelRect.height,
+        )
+        .stroke({ color: 0xffffff, width: 1 })
+        .fill({ color: 0x000000, alpha: 0.5 }),
     );
-    this.#appCanvas.endFill();
   }
 
   addText(text: string): void {
-    const newText = new PIXI.Text(text, this.#textStyles);
+    const newText = new PIXI.Text({ text, style: this.#textStyles });
     newText.position.x = this.#debugPanelRect.x + 10;
     newText.position.y = this.#debugPanelRect.y + this.#currentYOffset;
     this.#currentYOffset += this.#lineHeight;
@@ -60,7 +62,7 @@ export class DebugPanel {
       return;
     }
 
-    const newText = new PIXI.Text(text, this.#textStyles);
+    const newText = new PIXI.Text({ text, style: this.#textStyles });
     newText.position.x = this.#debugPanelRect.x + 10;
     newText.position.y =
       this.#debugPanelRect.y + this.#lineHeight * index + this.#lineHeight / 2;
@@ -75,12 +77,12 @@ export class DebugPanel {
     this.#texts.forEach((text) => this.#appCanvas.removeChild(text));
     this.#texts = [];
     this.#currentYOffset = 10;
-    this.#appCanvas.clear();
+    this.#appCanvas.removeChildren();
     this.#initializePanel();
   }
 
   render(): void {
-    this.#appCanvas.clear();
+    this.#appCanvas.removeChildren();
     this.#initializePanel();
     this.#texts.forEach((text) => this.#appCanvas.addChild(text));
   }

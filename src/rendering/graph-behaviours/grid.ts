@@ -71,7 +71,7 @@ export class GraphGridBehaviour implements IGraphBehaviour {
       this.#renderGrid();
     });
 
-    resizeObserver.observe(this.#application.view as HTMLCanvasElement);
+    resizeObserver.observe(this.#application.canvas as HTMLCanvasElement);
   }
 
   /**
@@ -127,12 +127,17 @@ export class GraphGridBehaviour implements IGraphBehaviour {
         Math.floor(i + 0.5) % majorInterval === 0 ? colourMajor : colourMinor;
 
       if (newColour !== colour) {
-        this.#gridGraphics.lineStyle(1, newColour, 0.8);
         colour = newColour;
       }
 
-      this.#gridGraphics.moveTo(currentX, start.y);
-      this.#gridGraphics.lineTo(currentX, end.y);
+      this.#gridGraphics
+        .moveTo(currentX, start.y)
+        .lineTo(currentX, end.y)
+        .stroke({
+          color: colour,
+          pixelLine: true,
+          alpha: 0.8,
+        });
     }
 
     const verticalFraction =
@@ -148,12 +153,17 @@ export class GraphGridBehaviour implements IGraphBehaviour {
         Math.floor(i + 0.5) % majorInterval === 0 ? colourMajor : colourMinor;
 
       if (newColour !== colour) {
-        this.#gridGraphics.lineStyle(1, newColour, 0.8);
         colour = newColour;
       }
 
-      this.#gridGraphics.moveTo(start.x, currentY);
-      this.#gridGraphics.lineTo(end.x, currentY);
+      this.#gridGraphics
+        .moveTo(start.x, currentY)
+        .lineTo(end.x, currentY)
+        .stroke({
+          color: colour,
+          pixelLine: true,
+          alpha: 0.8,
+        });
     }
   }
 }

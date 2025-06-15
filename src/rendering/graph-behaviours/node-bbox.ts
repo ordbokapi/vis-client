@@ -23,7 +23,7 @@ export interface INodeBBoxBehaviourState {
    * @param rect The search bounding box.
    */
   nodesIn(rect: Rect2D): IterableIterator<{
-    graphics: pixi.Graphics;
+    graphics: pixi.Container;
     d3Node: d3.SimulationNodeDatum & Article;
   }>;
 }
@@ -33,7 +33,7 @@ type RStarTreeLeafNode = {
   minY: number;
   maxX: number;
   maxY: number;
-  graphics: pixi.Graphics;
+  graphics: pixi.Container;
   d3Node: d3.SimulationNodeDatum & Article;
 };
 
@@ -49,13 +49,13 @@ export class GraphNodeBBoxBehaviour
   #cache: BoundingBoxCache;
   #tree: RStarTree;
   #state: INodeBBoxBehaviourState;
-  #graphics: IndexedSet<pixi.Graphics>;
+  #graphics: IndexedSet<pixi.Container>;
   #nodes: (d3.SimulationNodeDatum & Article)[];
 
   /**
    * Map of graphics to their respective R* tree leaf nodes.
    */
-  #treeLeafNodes = new Map<pixi.Graphics, RStarTreeLeafNode>();
+  #treeLeafNodes = new Map<pixi.Container, RStarTreeLeafNode>();
 
   getState() {
     return this.#state;
@@ -106,7 +106,7 @@ export class GraphNodeBBoxBehaviour
   }
 
   #graphicsToLeafNode(
-    graphics: pixi.Graphics,
+    graphics: pixi.Container,
     d3Node: d3.SimulationNodeDatum & Article,
   ): RStarTreeLeafNode {
     const bounds = this.#cache.get(graphics);

@@ -12,8 +12,8 @@ import { GraphNodeBBoxBehaviour } from './node-bbox.js';
  * Node force behaviour.
  */
 export class GraphForceBehaviour implements IGraphBehaviour {
-  #debugAppCanvas?: pixi.Graphics;
-  #debugViewportCanvas?: pixi.Graphics;
+  #debugAppCanvas?: pixi.Container;
+  #debugViewportCanvas?: pixi.Container;
 
   constructor({
     viewport,
@@ -24,8 +24,8 @@ export class GraphForceBehaviour implements IGraphBehaviour {
     getState,
   }: IGraphBehaviourInitializationOptions) {
     if (appStateManager.get('debug')) {
-      this.#debugAppCanvas = application.stage.addChild(new pixi.Graphics());
-      this.#debugViewportCanvas = viewport.addChild(new pixi.Graphics());
+      this.#debugAppCanvas = application.stage.addChild(new pixi.Container());
+      this.#debugViewportCanvas = viewport.addChild(new pixi.Container());
     }
 
     const boundingBoxes = getState(GraphNodeBBoxBehaviour);

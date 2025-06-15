@@ -22,7 +22,7 @@ export class GraphDebugBehaviour implements IGraphBehaviour {
     if (appStateManager.get('debug') && selection.size > 0) {
       if (!this.#debugPanel) {
         this.#debugPanel = new DebugPanel(
-          application.stage.addChild(new pixi.Graphics()),
+          application.stage.addChild(new pixi.Container()),
           new Rect2D(20, 500, 200, 200),
         );
       }

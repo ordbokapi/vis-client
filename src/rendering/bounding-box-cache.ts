@@ -25,7 +25,7 @@ export class BoundingBoxCache {
   /**
    * The bounding box sizes in global space, without transformations applied.
    */
-  #sizes = new Map<pixi.DisplayObject, Vector2D>();
+  #sizes = new Map<pixi.Container, Vector2D>();
 
   /**
    * The current viewport scale.
@@ -67,7 +67,7 @@ export class BoundingBoxCache {
    * Gets the bounding box of the specified object in local space.
    * @param object An object.
    */
-  get(object: pixi.DisplayObject): Rect2D {
+  get(object: pixi.Container): Rect2D {
     const size = this.#sizes.get(object) ?? this.#cacheSize(object);
 
     const topLeft = new Vector2D(object.position).subtract(size.divide(2));
@@ -79,7 +79,7 @@ export class BoundingBoxCache {
    * Caches the size of the specified object.
    * @param object An object.
    */
-  #cacheSize(object: pixi.DisplayObject): Vector2D {
+  #cacheSize(object: pixi.Container): Vector2D {
     const size = new Rect2D(object.getBounds()).size;
 
     this.#sizes.set(object, size.divide(this.#scale));

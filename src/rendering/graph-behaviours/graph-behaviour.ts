@@ -36,13 +36,13 @@ type MethodOptions<T, K extends MethodKeys<T>> = Parameters<
  */
 export interface IGraphBehaviourOptions {
   /** The graphical element representing the node. */
-  graphics: pixi.Graphics;
+  graphics: pixi.Container;
 
   /** The d3 node datum. */
   node: d3.SimulationNodeDatum & Article;
 
   /** All graphical elements representing the nodes. */
-  allGraphics: IndexedSet<pixi.Graphics>;
+  allGraphics: IndexedSet<pixi.Container>;
 
   /** All d3 node data. */
   nodes: (d3.SimulationNodeDatum & Article)[];
@@ -78,7 +78,7 @@ export interface IGraphBehaviourOptions {
   selection: NodeSelection;
 
   /** The node graphics map, keyed by node ID and dictionary. */
-  graphicsMap: TwoKeyMap<number, string, pixi.Graphics>;
+  graphicsMap: TwoKeyMap<number, string, pixi.Container>;
 
   /** Gets the state data for the graph behaviour. */
   getState<S>(behaviour: GraphBehaviourConstructor<S>): S;

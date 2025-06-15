@@ -22,7 +22,7 @@ export class GraphView extends EventTarget {
   /**
    * PixiJS canvas for overlay.
    */
-  #overlayCanvas: pixi.Graphics;
+  #overlayCanvas: pixi.Container;
 
   /**
    * The current graph being displayed.
@@ -55,7 +55,7 @@ export class GraphView extends EventTarget {
     this.#application = application;
     this.#viewport = viewport;
 
-    this.#overlayCanvas = this.#viewport.addChild(new pixi.Graphics());
+    this.#overlayCanvas = this.#viewport.addChild(new pixi.Container());
 
     this.#simulation = d3.forceSimulation<d3.SimulationNodeDatum & Article>();
 
@@ -117,21 +117,20 @@ export class GraphView extends EventTarget {
   }
 
   #renderIsEmptyOverlay() {
-    this.#overlayCanvas.clear();
     this.#overlayCanvas.removeChildren();
 
     if (this.#simulation.nodes().length) {
       return;
     }
 
-    const text = new pixi.Text(
-      'Ingen data. Søk etter ein artikkel for å starta.',
-      {
+    const text = new pixi.Text({
+      text: 'Ingen data. Søk etter ein artikkel for å starta.',
+      style: {
         fontSize: 16,
         fill: 0xaaaaaa,
         fontFamily: 'IBM Plex Sans',
       },
-    );
+    });
 
     text.resolution = this.#viewport.scale.x;
     text.anchor.set(0.5);

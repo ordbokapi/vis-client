@@ -12,18 +12,18 @@ export class BBoxCollisionForce {
   /**
    * The graphics objects that represent the nodes.
    */
-  #nodeGraphics: IndexedSet<pixi.Graphics>;
+  #nodeGraphics: IndexedSet<pixi.Container>;
 
   /**
    * The debug canvas used to visualize debug information in the viewport.
    */
-  #debugViewportCanvas?: pixi.Graphics;
+  #debugViewportCanvas?: pixi.Container;
 
   /**
    * The debug canvas used to visualize debug information directly in the
    * application.
    */
-  #debugAppCanvas?: pixi.Graphics;
+  #debugAppCanvas?: pixi.Container;
 
   /**
    * The debug panel used to visualize debug information directly in the
@@ -80,10 +80,10 @@ export class BBoxCollisionForce {
    * directly in the application.
    */
   constructor(
-    nodeGraphics: IndexedSet<pixi.Graphics>,
+    nodeGraphics: IndexedSet<pixi.Container>,
     boundingBoxes: INodeBBoxBehaviourState,
-    debugViewportCanvas?: pixi.Graphics,
-    debugAppCanvas?: pixi.Graphics,
+    debugViewportCanvas?: pixi.Container,
+    debugAppCanvas?: pixi.Container,
   ) {
     this.#nodeGraphics = nodeGraphics;
     this.#debugViewportCanvas = debugViewportCanvas;
@@ -161,9 +161,7 @@ export class BBoxCollisionForce {
    * @param alpha The current alpha value.
    */
   applyForce(alpha: number) {
-    this.#debugViewportCanvas?.clear();
     this.#debugViewportCanvas?.removeChildren();
-    this.#debugAppCanvas?.clear();
     this.#debugAppCanvas?.removeChildren();
 
     if (this.#debugPanel) {
@@ -213,27 +211,34 @@ export class BBoxCollisionForce {
       const boundsCenter = bounds.center;
 
       if (this.#debugViewportCanvas) {
-        this.#debugViewportCanvas.lineStyle(1, 0xff0000);
-        this.#debugViewportCanvas.drawRect(
-          bounds.x,
-          bounds.y,
-          bounds.width,
-          bounds.height,
+        this.#debugViewportCanvas.addChild(
+          new pixi.Graphics()
+            .rect(bounds.x, bounds.y, bounds.width, bounds.height)
+            .stroke({ color: 0xff0000, width: 1 }),
         );
 
         // draw a cross at the center of the bounds
-        this.#debugViewportCanvas.lineStyle(1, 0x00ff00);
-        this.#debugViewportCanvas.moveTo(boundsCenter.x - 5, boundsCenter.y);
-        this.#debugViewportCanvas.lineTo(boundsCenter.x + 5, boundsCenter.y);
-        this.#debugViewportCanvas.moveTo(boundsCenter.x, boundsCenter.y - 5);
-        this.#debugViewportCanvas.lineTo(boundsCenter.x, boundsCenter.y + 5);
+        this.#debugViewportCanvas.addChild(
+          new pixi.Graphics()
+            .moveTo(boundsCenter.x - 5, boundsCenter.y)
+            .lineTo(boundsCenter.x + 5, boundsCenter.y)
+            .moveTo(boundsCenter.x, boundsCenter.y - 5)
+            .lineTo(boundsCenter.x, boundsCenter.y + 5)
+            .stroke({ color: 0x00ff00, width: 1 }),
+        );
 
         // draw the node's vx and vy
-        this.#debugViewportCanvas.lineStyle(1, 0xffff00);
-        this.#debugViewportCanvas.moveTo(boundsCenter.x, boundsCenter.y);
-        this.#debugViewportCanvas.lineTo(
-          boundsCenter.x + d3Node.vx! * 20,
-          boundsCenter.y + d3Node.vy! * 20,
+        this.#debugViewportCanvas.addChild(
+          new pixi.Graphics()
+            .moveTo(boundsCenter.x, boundsCenter.y)
+            .lineTo(
+              boundsCenter.x + d3Node.vx! * 20,
+              boundsCenter.y + d3Node.vy! * 20,
+            )
+            .stroke({
+              color: 0xffff00,
+              width: 1,
+            }),
         );
       }
 
@@ -252,12 +257,15 @@ export class BBoxCollisionForce {
           .resizeCentered(20); // add some margin around the node
 
         if (this.#debugViewportCanvas) {
-          this.#debugViewportCanvas.lineStyle(1, 0x0000ff);
-          this.#debugViewportCanvas.drawRect(
-            otherNodeBounds.x,
-            otherNodeBounds.y,
-            otherNodeBounds.width,
-            otherNodeBounds.height,
+          this.#debugViewportCanvas.addChild(
+            new pixi.Graphics()
+              .rect(
+                otherNodeBounds.x,
+                otherNodeBounds.y,
+                otherNodeBounds.width,
+                otherNodeBounds.height,
+              )
+              .stroke({ color: 0x0000ff, width: 1 }),
           );
         }
 
@@ -274,12 +282,15 @@ export class BBoxCollisionForce {
         // );
 
         if (this.#debugViewportCanvas) {
-          this.#debugViewportCanvas.lineStyle(1, 0xff00ff);
-          this.#debugViewportCanvas.drawRect(
-            intersection.x,
-            intersection.y,
-            intersection.width,
-            intersection.height,
+          this.#debugViewportCanvas.addChild(
+            new pixi.Graphics()
+              .rect(
+                intersection.x,
+                intersection.y,
+                intersection.width,
+                intersection.height,
+              )
+              .stroke({ color: 0xff00ff, width: 1 }),
           );
         }
 

@@ -30,7 +30,7 @@ export class NodeGraph {
   /**
    * The nodes in the graph.
    */
-  #nodes = new IndexedSet<pixi.Graphics>();
+  #nodes = new IndexedSet<pixi.Container>();
 
   /**
    * The node map, keyed by node ID.
@@ -40,12 +40,12 @@ export class NodeGraph {
   /**
    * The node graphics map, keyed by node ID and dictionary.
    */
-  #graphicsMap = new TwoKeyMap<number, string, pixi.Graphics>();
+  #graphicsMap = new TwoKeyMap<number, string, pixi.Container>();
 
   /**
    * The edge canvas.
    */
-  #edgeCanvas = new pixi.Graphics();
+  #edgeCanvas = new pixi.Container();
 
   /**
    * The d3 nodes from which the graph is generated.
@@ -179,7 +179,7 @@ export class NodeGraph {
   /**
    * Gets the nodes in the graph.
    */
-  get nodes(): IndexedSet<pixi.Graphics> {
+  get nodes(): IndexedSet<pixi.Container> {
     return this.#nodes;
   }
 
@@ -280,17 +280,20 @@ export class NodeGraph {
 
     // Create new nodes
     this.#d3Nodes.forEach((d3Node) => {
-      const node = new pixi.Graphics();
-      const text = new pixi.Text(d3Node.lemmas[0].lemma, {
-        fontSize: 12,
-        fill: 0xffffff,
-        fontFamily: 'Lora',
+      const node = new pixi.Container();
+      const text = new pixi.Text({
+        text: d3Node.lemmas[0].lemma,
+        style: {
+          fontSize: 12,
+          fill: 0xffffff,
+          fontFamily: 'Lora',
+        },
       });
 
       text.resolution = this.#viewport.scale.x;
 
       // Adjust rectangle size based on text bounds
-      const textBounds = pixi.TextMetrics.measureText(
+      const textBounds = pixi.CanvasTextMetrics.measureText(
         d3Node.lemmas[0].lemma,
         text.style,
       );
@@ -308,16 +311,12 @@ export class NodeGraph {
           : 0x1b1b1b;
       const borderColor = 0x666666;
 
-      node.beginFill(color);
-      node.lineStyle(1, borderColor);
-      node.drawRoundedRect(
-        -width / 2,
-        -height / 2,
-        width,
-        height,
-        cornerRadius,
+      node.addChild(
+        new pixi.Graphics()
+          .roundRect(-width / 2, -height / 2, width, height, cornerRadius)
+          .fill({ color })
+          .stroke({ color: borderColor, width: 1 }),
       );
-      node.endFill();
 
       text.anchor.set(0.5);
       text.position.set(0, 0);
@@ -353,9 +352,8 @@ export class NodeGraph {
       text.resolution = textResolution;
     }
 
-    this.#edgeCanvas.clear();
+    this.#edgeCanvas.removeChildren();
 
-    this.#edgeCanvas.lineStyle(1, 0x00ffff, 1);
     for (const { source, target } of this.#d3Links as {
       source: d3.SimulationNodeDatum & Article;
       target: d3.SimulationNodeDatum & Article;
@@ -368,8 +366,12 @@ export class NodeGraph {
       )
         continue;
 
-      this.#edgeCanvas.moveTo(source.x, source.y);
-      this.#edgeCanvas.lineTo(target.x, target.y);
+      this.#edgeCanvas.addChild(
+        new pixi.Graphics()
+          .moveTo(source.x, source.y)
+          .lineTo(target.x, target.y)
+          .stroke({ color: 0x00ffff, width: 1, alpha: 1 }),
+      );
     }
     // Update node positions
     const simulationNodes = this.#d3Nodes;

@@ -31,7 +31,7 @@ export class GraphDragBehaviour
   #data = new Vector2D();
   #nodes: (d3.SimulationNodeDatum & Article)[];
   #node?: d3.SimulationNodeDatum & Article;
-  #graphics?: pixi.Graphics;
+  #graphics?: pixi.Container;
   #index?: number;
 
   getState() {
