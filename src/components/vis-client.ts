@@ -1,7 +1,5 @@
 import { html } from '../utils/index.js';
 import { StateManagedElement } from './state-managed-element.js';
-import { SearchBar } from './search-bar.js';
-import { Sidebar } from './sidebar.js';
 import { Statusbar } from './statusbar.js';
 import { Viewport } from './viewport.js';
 import './app-logo.js';
@@ -9,27 +7,15 @@ import './app-logo.js';
  * Main client component, which encompasses the entire application.
  */
 export class VisClient extends StateManagedElement {
-  #root: HTMLDivElement;
-
   /**
    * The viewport component.
    */
   #viewport: Viewport;
 
   /**
-   * The sidebar component.
-   */
-  #sidebar: Sidebar;
-
-  /**
    * The statusbar component.
    */
   #statusbar: Statusbar;
-
-  /**
-   * The search bar component.
-   */
-  #searchBar: SearchBar;
 
   constructor() {
     super();
@@ -82,18 +68,12 @@ export class VisClient extends StateManagedElement {
       </div>
       <vis-app-logo></vis-app-logo>
     `;
-    this.#root = this.shadowRoot!.querySelector('#vis') as HTMLDivElement;
     this.#viewport = this.shadowRoot!.querySelector('vis-viewport') as Viewport;
-    this.#sidebar = this.shadowRoot!.querySelector('vis-sidebar') as Sidebar;
     this.#statusbar = this.shadowRoot!.querySelector(
       'vis-statusbar',
     ) as Statusbar;
 
     // load graph when articleSelected event is received from search bar
-    this.#searchBar = this.shadowRoot!.querySelector(
-      'vis-search-bar',
-    ) as SearchBar;
-
     this.appStateManager.observe('currentArticle', (article) => {
       if (article?.dictionary && article?.id) {
         this.#viewport.loadGraph(article.id, article.dictionary);

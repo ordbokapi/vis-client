@@ -1,13 +1,12 @@
 import * as d3 from 'd3';
 import * as pixi from 'pixi.js';
-// @ts-expect-error Broken types
 import { Viewport } from 'pixi-viewport';
 import { IndexedSet, TwoKeyMap } from '../../types/index.js';
 import { Article, ScopedAppStateManager } from '../../providers/index.js';
 import { NodeSelection } from '../node-selection.js';
 
 type MethodInner<T, K extends keyof T> = K extends any
-  ? // eslint-disable-next-line @typescript-eslint/ban-types
+  ? // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     T[K] extends Function
     ? K
     : never
@@ -105,7 +104,7 @@ export interface IGraphBehaviour<T = any> {
    * Runs when the graph behaviour is registered.
    * @param options The graph behaviour options.
    */
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   constructor: GraphBehaviourConstructor<T> | Function;
 
   /**

@@ -3,31 +3,35 @@
   "packageManager": "yarn@4.6.0",
   "type": "module",
   "dependencies": {
-    "@msgpack/msgpack": "^3.0.0-beta2",
-    "@pixi/core": "^7.3.3",
-    "@pixi/display": "^7.3.3",
-    "d3": "^7.8.5",
-    "pixi-viewport": "^5.0.2",
+    "@msgpack/msgpack": "^3.1.2",
+    "@pixi/core": "^7.4.3",
+    "@pixi/display": "^7.4.3",
+    "@pixi/math": "^7.4.3",
+    "@pixi/ticker": "^7.4.3",
+    "d3": "^7.9.0",
+    "pixi-viewport": "^5.1.0",
     "pixi.js": "^7.3.3",
     "rbush": "^3.0.1"
   },
   "devDependencies": {
-    "@parcel/packager-raw-url": "2.13.3",
-    "@parcel/transformer-inline-string": "2.13.3",
-    "@parcel/transformer-webmanifest": "2.13.3",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.29.0",
+    "@parcel/packager-raw-url": "^2.15.2",
+    "@parcel/transformer-inline-string": "^2.15.2",
+    "@parcel/transformer-webmanifest": "^2.15.2",
     "@types/d3": "^7.4.3",
-    "@types/eslint": "^9.0.0",
+    "@types/eslint": "^9.6.1",
     "@types/rbush": "^3",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "buffer": "^5.5.0||^6.0.0",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "parcel": "^2.11.0",
-    "prettier": "^3.2.4",
-    "punycode": "^2.0.0",
-    "typescript": "^5.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "buffer": "^5.7.1||^6.0.3",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.1",
+    "parcel": "^2.15.2",
+    "prettier": "^3.5.3",
+    "punycode": "^2.3.1",
+    "typescript": "^5.8.3",
     "url": "^0.11.0"
   },
   "scripts": {
@@ -36,5 +40,8 @@
     "format": "prettier --write 'src/**/*.ts'",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix"
+  },
+  "volta": {
+    "node": "24.2.0"
   }
 }

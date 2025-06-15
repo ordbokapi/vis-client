@@ -1,5 +1,4 @@
 import * as pixi from 'pixi.js';
-// @ts-expect-error Broken types
 import { Viewport as PixiViewport } from 'pixi-viewport';
 import {
   IGraphBehaviour,

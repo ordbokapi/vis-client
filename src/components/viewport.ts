@@ -1,5 +1,4 @@
 import * as pixi from 'pixi.js';
-// @ts-expect-error Broken types
 import { Viewport as PixiViewport } from 'pixi-viewport';
 import { html, text } from '../utils/index.js';
 import { GraphView } from '../rendering/index.js';
@@ -85,6 +84,7 @@ export class Viewport extends StateManagedElement {
     this.shadowRoot!.appendChild(view);
 
     this.viewport = new PixiViewport({
+      // @ts-expect-error Exists according to docs
       events: this.app.renderer.events,
       screenWidth: this.clientWidth,
       screenHeight: this.clientHeight,

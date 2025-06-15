@@ -37,7 +37,7 @@ type RStarTreeLeafNode = {
   d3Node: d3.SimulationNodeDatum & Article;
 };
 
-type RStarTree = RBush.default<RStarTreeLeafNode>;
+type RStarTree = RBush<RStarTreeLeafNode>;
 
 /**
  * Caches node bounding boxes and allows searching for nodes that intersect
@@ -74,7 +74,6 @@ export class GraphNodeBBoxBehaviour
     this.#nodes = nodes;
 
     this.#cache = new BoundingBoxCache(viewport);
-    // @ts-expect-error Broken types
     this.#tree = new RBush<RStarTreeLeafNode>();
     this.#state = {
       cache: this.#cache,

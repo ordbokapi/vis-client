@@ -37,11 +37,6 @@ export class ModalDialog extends HTMLElement {
   #root: HTMLDivElement;
 
   /**
-   * The title of the dialog.
-   */
-  #title: string;
-
-  /**
    * The content of the dialog.
    */
   #content: Node;
@@ -86,7 +81,6 @@ export class ModalDialog extends HTMLElement {
       return template.content;
     };
 
-    this.#title = title;
     this.#content = htmlContent
       ? typeof htmlContent === 'string'
         ? htmlToElement(htmlContent)
