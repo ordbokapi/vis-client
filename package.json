@@ -10,7 +10,7 @@
     "@pixi/ticker": "^7.4.3",
     "d3": "^7.9.0",
     "pixi-viewport": "^5.1.0",
-    "pixi.js": "^7.3.3",
+    "pixi.js": "^8.0.0",
     "rbush": "^4.0.1"
   },
   "devDependencies": {
