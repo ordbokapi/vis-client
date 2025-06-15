@@ -11,7 +11,7 @@
     "d3": "^7.9.0",
     "pixi-viewport": "^5.1.0",
     "pixi.js": "^7.3.3",
-    "rbush": "^3.0.1"
+    "rbush": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -21,7 +21,7 @@
     "@parcel/transformer-webmanifest": "^2.15.2",
     "@types/d3": "^7.4.3",
     "@types/eslint": "^9.6.1",
-    "@types/rbush": "^3",
+    "@types/rbush": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
     "buffer": "^5.7.1||^6.0.3",
