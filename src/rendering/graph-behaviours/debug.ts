@@ -27,7 +27,7 @@ export class GraphDebugBehaviour implements IGraphBehaviour {
         );
       }
 
-      const node = nodes[allGraphics.indexOf(selection.first())];
+      const node = nodes[allGraphics.indexOf(selection.first()!)];
 
       const velocity = new Vector2D(node.vx, node.vy);
       const velocityAngle = velocity.angle();

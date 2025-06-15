@@ -1,6 +1,5 @@
 import * as d3 from 'd3';
 import * as pixi from 'pixi.js';
-// @ts-expect-error Broken types
 import { Viewport } from 'pixi-viewport';
 import { IndexedSet, TwoKeyMap } from '../../types/index.js';
 import { Article, ScopedAppStateManager } from '../../providers/index.js';

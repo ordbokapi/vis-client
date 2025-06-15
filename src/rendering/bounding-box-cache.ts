@@ -1,5 +1,4 @@
 import * as pixi from 'pixi.js';
-// @ts-expect-error Broken types
 import { Viewport } from 'pixi-viewport';
 import { Rect2D, Vector2D } from '../types/index.js';
 
