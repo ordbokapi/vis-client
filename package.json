@@ -9,7 +9,7 @@
     "@pixi/math": "^7.4.3",
     "@pixi/ticker": "^7.4.3",
     "d3": "^7.9.0",
-    "pixi-viewport": "^5.1.0",
+    "pixi-viewport": "^6.0.0",
     "pixi.js": "^7.3.3",
     "rbush": "^3.0.1"
   },
