@@ -46,7 +46,6 @@ export class GraphForceBehaviour implements IGraphBehaviour {
       .force(
         'collide',
         new BBoxCollisionForce(
-          viewport,
           allGraphics,
           boundingBoxes,
           this.#debugViewportCanvas,

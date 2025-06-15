@@ -12,11 +12,6 @@ import { LoadingIcon } from './loading-icon.js';
  */
 export class SearchBar extends StateManagedElement {
   /**
-   * The root element.
-   */
-  #root: HTMLDivElement;
-
-  /**
    * The input element.
    */
   #input: HTMLInputElement;
@@ -248,7 +243,6 @@ export class SearchBar extends StateManagedElement {
         </div>
       </div>
     `;
-    this.#root = this.shadowRoot!.querySelector('#root') as HTMLDivElement;
     this.#input = this.shadowRoot!.querySelector('#input') as HTMLInputElement;
     this.#tooltip = this.shadowRoot!.querySelector(
       '#tooltip',

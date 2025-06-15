@@ -1,7 +1,5 @@
 import * as d3 from 'd3';
 import * as pixi from 'pixi.js';
-// @ts-expect-error Broken types
-import { Viewport } from 'pixi-viewport';
 import { IndexedSet, Vector2D } from '../types/index.js';
 import { DebugPanel } from './debug-panel.js';
 import { INodeBBoxBehaviourState } from './graph-behaviours/node-bbox.js';
@@ -32,11 +30,6 @@ export class BBoxCollisionForce {
    * application.
    */
   #debugPanel?: DebugPanel;
-
-  /**
-   * The viewport used to render the graph.
-   */
-  #viewport: Viewport;
 
   /**
    * The nodes that are currently being simulated.
@@ -80,7 +73,6 @@ export class BBoxCollisionForce {
 
   /**
    * Initializes the force.
-   * @param viewport The viewport used to render the graph.
    * @param nodeGraphics The graphics objects that represent the nodes.
    * @param debugViewportCanvas The debug canvas used to visualize debug
    * information in the viewport.
@@ -88,13 +80,11 @@ export class BBoxCollisionForce {
    * directly in the application.
    */
   constructor(
-    viewport: Viewport,
     nodeGraphics: IndexedSet<pixi.Graphics>,
     boundingBoxes: INodeBBoxBehaviourState,
     debugViewportCanvas?: pixi.Graphics,
     debugAppCanvas?: pixi.Graphics,
   ) {
-    this.#viewport = viewport;
     this.#nodeGraphics = nodeGraphics;
     this.#debugViewportCanvas = debugViewportCanvas;
     this.#debugAppCanvas = debugAppCanvas;
