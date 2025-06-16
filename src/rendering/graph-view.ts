@@ -68,6 +68,12 @@ export class GraphView extends EventTarget {
     this.#viewport.on('zoomed', () => {
       this.#renderIsEmptyOverlay();
     });
+
+    // Re-render when all external resources are loaded, to avoid the text not
+    // rendering with the the IBM Plex Sans font.
+    window.addEventListener('load', () => {
+      this.render();
+    });
   }
 
   setGraph(graph: ArticleGraph | undefined) {
