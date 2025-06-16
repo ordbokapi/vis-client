@@ -132,7 +132,7 @@ export class GraphView extends EventTarget {
       },
     });
 
-    text.resolution = this.#viewport.scale.x;
+    text.resolution = this.#viewport.scale.x * 2;
     text.anchor.set(0.5);
     text.position.set(this.#viewport.width / 2, this.#viewport.height / 2);
     this.#overlayCanvas.addChild(text);

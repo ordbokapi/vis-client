@@ -154,8 +154,8 @@ export class NodeGraph {
       const textResolution = this.#viewport.scale.x;
 
       for (const node of this.#nodes) {
-        const text = node.getChildAt(0) as pixi.Text;
-        text.resolution = textResolution;
+        const text = node.getChildByLabel('text') as pixi.Text;
+        text.resolution = textResolution * 2;
       }
     });
 
@@ -290,7 +290,7 @@ export class NodeGraph {
         },
       });
 
-      text.resolution = this.#viewport.scale.x;
+      text.resolution = this.#viewport.scale.x * 2;
 
       // Adjust rectangle size based on text bounds
       const textBounds = pixi.CanvasTextMetrics.measureText(
@@ -320,6 +320,7 @@ export class NodeGraph {
 
       text.anchor.set(0.5);
       text.position.set(0, 0);
+      text.label = 'text';
       node.addChild(text);
 
       node.x = d3Node.x!;
@@ -348,8 +349,8 @@ export class NodeGraph {
     // Update resolution value on text in nodes
     const textResolution = this.#viewport.scale.x;
     for (const node of this.#nodes) {
-      const text = node.getChildAt(0) as pixi.Text;
-      text.resolution = textResolution;
+      const text = node.getChildByLabel('text') as pixi.Text;
+      text.resolution = textResolution * 2;
     }
 
     this.#edgeCanvas.removeChildren();
