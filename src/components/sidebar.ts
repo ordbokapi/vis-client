@@ -303,8 +303,7 @@ export class Sidebar extends StateManagedElement {
         title: '⚠️ Feil',
         html: html`
           <p>
-            Det oppstod ein feil under lasting av artikkelen. Prøv igjen
-            seinare.
+            Det oppstod ein feil under lasting av artikkelen. Prøv att seinare.
           </p>
           <p>
             Artikkel-ID: <code>${id}</code>, Ordbok: <code>${dictionary}</code>

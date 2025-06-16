@@ -124,7 +124,7 @@ export class GraphView extends EventTarget {
     }
 
     const text = new pixi.Text({
-      text: 'Ingen data. Søk etter ein artikkel for å starta.',
+      text: 'Ingen data. Søk etter ein artikkel for å starte.',
       style: {
         fontSize: 16,
         fill: 0xaaaaaa,

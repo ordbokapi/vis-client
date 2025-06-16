@@ -107,7 +107,7 @@ export class Statusbar extends StateManagedElement {
         }
       </style>
       <div id="statusbar">
-        <span class="emoji-icon" title="Zoom-kontroller">🔍</span>
+        <span class="emoji-icon" title="Zoom-kontrollar">🔍</span>
         <button id="zoom-out" title="Zoom ut (CTRL+-)">➖</button>
         <input
           id="zoom-label"
@@ -118,11 +118,11 @@ export class Statusbar extends StateManagedElement {
         />
         <button id="zoom-in" title="Zoom inn (CTRL++)">➕</button>
         <vis-tooltip-cue
-          tooltip="Hald Shift nede medan du trykkjer for å zooma sakte"
+          tooltip="Hald Shift nede medan du trykkjer for å zoome sakte"
         >
         </vis-tooltip-cue>
         <div class="separator"></div>
-        <button id="center-view" title="CTRL+0">Sentrar vising</button>
+        <button id="center-view" title="CTRL+0">Sentrer vising</button>
         <div class="separator"></div>
         <button
           id="restart-simulation"
@@ -188,7 +188,7 @@ export class Statusbar extends StateManagedElement {
 
       const popOver = new PopOver();
 
-      popOver.text = 'Lenke kopiert til utklippstavla';
+      popOver.text = 'Lenkje kopiert til utklippstavla';
       popOver.target = this.#root.querySelector('#share-link')! as HTMLElement;
       popOver.show();
     });
