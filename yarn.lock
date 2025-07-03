@@ -4130,8 +4130,8 @@ __metadata:
   linkType: hard
 
 "pixi.js@npm:^8.10.1":
-  version: 8.10.1
-  resolution: "pixi.js@npm:8.10.1"
+  version: 8.11.0
+  resolution: "pixi.js@npm:8.11.0"
   dependencies:
     "@pixi/colord": "npm:^2.9.6"
     "@types/css-font-loading-module": "npm:^0.0.12"
@@ -4143,7 +4143,7 @@ __metadata:
     gifuct-js: "npm:^2.1.2"
     ismobilejs: "npm:^1.1.1"
     parse-svg-path: "npm:^0.1.2"
-  checksum: 10c0/fc3cedb80a3d14ba00ad4de30cd636edb5b1ab808eaf0fbcba43e7ca40e1f36ea06e0d15d5c1ef41dc6a76270bbefe47b178b73f3ec949feca537085f5b1d90b
+  checksum: 10c0/03972b3fe748fbcd7ee63291105bac278c332fdc71d3e2bac993e8e16f5cdf77a90402a21bf4d071ebd89bb9f68c53eaf118a51179ebb013ff97227d0d9d3b3c
   languageName: node
   linkType: hard
 
